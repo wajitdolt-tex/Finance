@@ -2,9 +2,10 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#f5f2ed">
 <title>Finance — บันทึกการเงินส่วนตัว</title>
-<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Noto+Serif+Display:wght@300;400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Serif+Display:wght@300;400;500&family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500&display=swap" rel="stylesheet">
 <style>
 :root {
   --bg:        #f5f2ed;
@@ -18,6 +19,7 @@
   --text3:     #9e9890;
   --accent:    #4a6741;
   --accent2:   #5c7d52;
+  --accent3:   #eaf0e6;
   --red:       #9b4a3a;
   --red-bg:    #f7eeec;
   --red-br:    #e0c5bf;
@@ -30,10 +32,45 @@
   --green:     #3d6b38;
   --green-bg:  #eaf3e8;
   --green-br:  #b5d4b0;
-  --r:         10px;
-  --rs:        6px;
+  --purple:    #6b4a7d;
+  --purple-bg: #f1ecf5;
+  --r:         12px;
+  --rs:        8px;
+  --shadow:    0 1px 3px rgba(44,42,39,0.04), 0 2px 8px rgba(44,42,39,0.04);
+  --shadow-lg: 0 8px 28px rgba(44,42,39,0.10);
 }
-* { box-sizing: border-box; margin: 0; padding: 0; }
+[data-theme="dark"] {
+  --bg:        #1a1816;
+  --bg2:       #232120;
+  --surface:   #26241f;
+  --surface2:  #2d2a25;
+  --border:    #3a3631;
+  --border2:   #4a4540;
+  --text:      #ebe6dd;
+  --text2:     #b5ada0;
+  --text3:     #7a736a;
+  --accent:    #7da872;
+  --accent2:   #94c187;
+  --accent3:   #2d3a28;
+  --red:       #d18a7a;
+  --red-bg:    #3a2724;
+  --red-br:    #5a3a32;
+  --amber:     #d4b173;
+  --amber-bg:  #3a2f1f;
+  --amber-br:  #5a4928;
+  --blue:      #8db5db;
+  --blue-bg:   #1f2a3a;
+  --blue-br:   #2e4258;
+  --green:     #94c187;
+  --green-bg:  #1f3a26;
+  --green-br:  #2e5238;
+  --purple:    #b59ac9;
+  --purple-bg: #2c2335;
+  --shadow:    0 1px 3px rgba(0,0,0,0.3), 0 2px 8px rgba(0,0,0,0.2);
+  --shadow-lg: 0 8px 28px rgba(0,0,0,0.4);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html { scroll-behavior: smooth; }
 body {
   background: var(--bg);
   color: var(--text);
@@ -41,120 +78,616 @@ body {
   font-size: 15px;
   line-height: 1.6;
   min-height: 100vh;
+  transition: background 0.3s, color 0.3s;
+  overflow-x: hidden;
 }
-.mono { font-family: 'IBM Plex Mono', monospace; }
+.mono { font-family: 'IBM Plex Mono', monospace; font-feature-settings: 'tnum'; }
+.serif { font-family: 'Fraunces', 'Noto Serif Display', serif; }
 
 /* ── Layout ── */
-.app { max-width: 960px; margin: 0 auto; padding: 36px 20px 80px; }
+.app { max-width: 1080px; margin: 0 auto; padding: 28px 20px 120px; }
 
 /* ── Header ── */
 .header {
   display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: 32px; padding-bottom: 20px;
-  border-bottom: 1px solid var(--border2);
+  margin-bottom: 28px; padding-bottom: 22px;
+  border-bottom: 1px solid var(--border);
   flex-wrap: wrap; gap: 14px;
 }
-.brand { display: flex; flex-direction: column; gap: 1px; }
+.brand { display: flex; flex-direction: column; gap: 2px; }
 .brand-title {
-  font-family: 'Noto Serif Display', serif;
-  font-size: 22px; font-weight: 300; letter-spacing: 0.04em;
-  color: var(--text);
+  font-family: 'Fraunces', serif;
+  font-size: 28px; font-weight: 400; letter-spacing: -0.02em;
+  color: var(--text); line-height: 1;
+  font-style: italic;
 }
-.brand-sub { font-size: 12px; color: var(--text3); letter-spacing: 0.06em; }
-.month-bar { display: flex; align-items: center; gap: 6px; }
+.brand-sub { font-size: 11px; color: var(--text3); letter-spacing: 0.18em; text-transform: uppercase; margin-top: 6px; font-weight: 500; }
+.header-tools { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.month-bar { display: flex; align-items: center; gap: 4px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--rs); padding: 4px 8px; }
+.month-bar svg { color: var(--text3); }
 .month-bar select {
-  background: var(--surface); border: 1px solid var(--border2);
-  border-radius: var(--rs); color: var(--text); font-family: 'Sarabun', sans-serif;
-  font-size: 13px; padding: 6px 10px; outline: none; cursor: pointer; appearance: none;
+  background: none; border: none;
+  color: var(--text); font-family: 'Sarabun', sans-serif;
+  font-size: 13px; padding: 4px 6px; outline: none; cursor: pointer; appearance: none;
+  font-weight: 500;
 }
-.month-bar select option { background: #faf8f5; }
+.month-bar select option { background: var(--surface); }
+.icon-btn {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--rs);
+  width: 38px; height: 38px; display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: var(--text2); transition: all 0.15s;
+}
+.icon-btn:hover { background: var(--bg2); color: var(--text); transform: translateY(-1px); }
+.icon-btn:active { transform: translateY(0); }
+
+/* ── Hero stat (focal point) ── */
+.hero {
+  background: linear-gradient(135deg, var(--surface) 0%, var(--surface2) 100%);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 28px 32px;
+  margin-bottom: 28px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+.hero::before {
+  content: '';
+  position: absolute; top: -50%; right: -10%;
+  width: 380px; height: 380px;
+  background: radial-gradient(circle, var(--accent3) 0%, transparent 60%);
+  opacity: 0.5; pointer-events: none;
+}
+.hero-content { position: relative; z-index: 1; display: flex; justify-content: space-between; align-items: flex-end; gap: 20px; flex-wrap: wrap; }
+.hero-left { flex: 1; min-width: 240px; }
+.hero-label {
+  font-size: 11px; color: var(--text3); letter-spacing: 0.16em;
+  text-transform: uppercase; font-weight: 600; margin-bottom: 8px;
+}
+.hero-amount {
+  font-family: 'Fraunces', serif;
+  font-size: clamp(36px, 7vw, 56px); font-weight: 300; letter-spacing: -0.03em;
+  line-height: 1; color: var(--text);
+}
+.hero-amount .sign { font-size: 0.6em; color: var(--text3); margin-right: 4px; }
+.hero-sub { font-size: 13px; color: var(--text2); margin-top: 10px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.hero-mini { display: flex; align-items: center; gap: 6px; }
+.hero-mini-dot { width: 6px; height: 6px; border-radius: 50%; }
+.hero-mini.inc .hero-mini-dot { background: var(--green); }
+.hero-mini.exp .hero-mini-dot { background: var(--red); }
+.hero-right { display: flex; flex-direction: column; gap: 12px; align-items: flex-end; }
+.savings-rate {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 14px; padding: 12px 18px;
+  display: flex; align-items: center; gap: 14px;
+  box-shadow: var(--shadow);
+}
+.sr-ring { position: relative; width: 56px; height: 56px; }
+.sr-ring svg { transform: rotate(-90deg); }
+.sr-ring-track { stroke: var(--border); fill: none; stroke-width: 5; }
+.sr-ring-fill { stroke: var(--accent); fill: none; stroke-width: 5; stroke-linecap: round; transition: stroke-dashoffset 0.8s cubic-bezier(0.4,0,0.2,1); }
+.sr-ring-pct {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  font-family: 'IBM Plex Mono', monospace; font-size: 13px; font-weight: 600; color: var(--text);
+}
+.sr-info { display: flex; flex-direction: column; }
+.sr-info-label { font-size: 11px; color: var(--text3); letter-spacing: 0.08em; text-transform: uppercase; font-weight: 600; }
+.sr-info-text { font-size: 12px; color: var(--text2); margin-top: 2px; }
 
 /* ── Section Title ── */
 .section-title {
-  font-size: 11px; font-weight: 600; letter-spacing: 0.14em;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.16em;
   text-transform: uppercase; color: var(--text3);
-  margin-bottom: 12px; margin-top: 28px;
-  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 14px; margin-top: 32px;
+  display: flex; align-items: center; gap: 10px;
 }
-.section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+.section-title::before { content: ''; width: 18px; height: 1px; background: var(--text3); }
+.section-title .st-extra { margin-left: auto; font-size: 11px; color: var(--text3); letter-spacing: 0.04em; text-transform: none; font-weight: 400; }
 
-/* ── Summary Cards ── */
-.summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+/* ── Summary mini cards ── */
+.summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
 .sum-card {
   background: var(--surface); border: 1px solid var(--border);
   border-radius: var(--r); padding: 16px 18px;
+  transition: all 0.2s;
+  position: relative; overflow: hidden;
 }
+.sum-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
 .sum-card.debt-card { background: var(--red-bg); border-color: var(--red-br); }
-.sum-label { font-size: 11px; color: var(--text3); margin-bottom: 6px; letter-spacing: 0.04em; }
-.sum-amount { font-family: 'IBM Plex Mono', monospace; font-size: 20px; font-weight: 500; line-height: 1.1; }
+.sum-icon {
+  width: 32px; height: 32px; border-radius: 8px;
+  background: var(--bg2); display: flex; align-items: center; justify-content: center;
+  margin-bottom: 10px; color: var(--text2);
+}
+.sum-card.debt-card .sum-icon { background: rgba(155,74,58,0.12); color: var(--red); }
+.sum-card.inc .sum-icon { background: var(--green-bg); color: var(--green); }
+.sum-card.exp .sum-icon { background: var(--bg2); color: var(--text2); }
+.sum-card.bal .sum-icon { background: var(--blue-bg); color: var(--blue); }
+.sum-label { font-size: 11px; color: var(--text3); margin-bottom: 4px; letter-spacing: 0.08em; text-transform: uppercase; font-weight: 600; }
+.sum-amount { font-family: 'IBM Plex Mono', monospace; font-size: 20px; font-weight: 600; line-height: 1.1; }
 .sum-amount.c-income { color: var(--green); }
-.sum-amount.c-expense { color: var(--red); }
+.sum-amount.c-expense { color: var(--text); }
 .sum-amount.c-balance { color: var(--text); }
 .sum-amount.c-debt { color: var(--red); }
-.sum-sub { font-size: 11px; color: var(--text3); margin-top: 4px; }
+.sum-sub { font-size: 11px; color: var(--text3); margin-top: 6px; }
+
+/* ── Charts ── */
+.charts-grid { display: grid; grid-template-columns: 1.3fr 1fr; gap: 14px; }
+.chart-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 20px 22px;
+  box-shadow: var(--shadow);
+}
+.chart-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.chart-title { font-size: 14px; font-weight: 600; color: var(--text); }
+.chart-sub { font-size: 11px; color: var(--text3); }
+.bars { display: flex; align-items: flex-end; gap: 10px; height: 160px; padding: 0 4px; }
+.bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 0; }
+.bar-stack { width: 100%; max-width: 32px; display: flex; flex-direction: column; justify-content: flex-end; height: 130px; gap: 2px; }
+.bar-seg { width: 100%; border-radius: 3px 3px 0 0; transition: all 0.4s cubic-bezier(0.4,0,0.2,1); cursor: pointer; }
+.bar-seg.inc { background: var(--accent); }
+.bar-seg.exp { background: var(--red); opacity: 0.85; border-radius: 0 0 3px 3px; }
+.bar-seg:hover { filter: brightness(1.1); }
+.bar-col.current .bar-seg { box-shadow: 0 0 0 2px var(--bg), 0 0 0 3px var(--accent); }
+.bar-label { font-size: 10px; color: var(--text3); font-family: 'IBM Plex Mono', monospace; }
+.bar-col.current .bar-label { color: var(--text); font-weight: 600; }
+.bar-legend { display: flex; gap: 16px; font-size: 11px; color: var(--text2); justify-content: center; margin-top: 8px; }
+.bar-legend-dot { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 4px; vertical-align: middle; }
+
+/* ── Donut chart ── */
+.donut-wrap { display: flex; align-items: center; gap: 18px; }
+.donut { position: relative; width: 130px; height: 130px; flex-shrink: 0; }
+.donut svg { transform: rotate(-90deg); }
+.donut-center {
+  position: absolute; inset: 0; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+}
+.donut-center-num { font-family: 'IBM Plex Mono', monospace; font-size: 18px; font-weight: 600; }
+.donut-center-lbl { font-size: 10px; color: var(--text3); letter-spacing: 0.08em; text-transform: uppercase; margin-top: 2px; }
+.donut-legend { flex: 1; display: flex; flex-direction: column; gap: 7px; min-width: 0; }
+.donut-leg-item { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+.donut-leg-dot { width: 9px; height: 9px; border-radius: 3px; flex-shrink: 0; }
+.donut-leg-name { color: var(--text2); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.donut-leg-amt { font-family: 'IBM Plex Mono', monospace; color: var(--text); font-weight: 500; flex-shrink: 0; }
+
+/* ── Insights ── */
+.insights { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 10px; }
+.insight {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 14px 16px;
+  display: flex; gap: 12px; align-items: flex-start;
+  transition: all 0.2s;
+}
+.insight:hover { transform: translateY(-1px); box-shadow: var(--shadow); }
+.insight.warn { background: var(--amber-bg); border-color: var(--amber-br); }
+.insight.good { background: var(--green-bg); border-color: var(--green-br); }
+.insight.info { background: var(--blue-bg); border-color: var(--blue-br); }
+.insight-icon {
+  width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+}
+.insight.warn .insight-icon { background: rgba(138,106,42,0.15); }
+.insight.good .insight-icon { background: rgba(61,107,56,0.15); }
+.insight.info .insight-icon { background: rgba(46,90,138,0.15); }
+.insight-body { flex: 1; min-width: 0; }
+.insight-title { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
+.insight.warn .insight-title { color: var(--amber); }
+.insight.good .insight-title { color: var(--green); }
+.insight.info .insight-title { color: var(--blue); }
+.insight-text { font-size: 12px; color: var(--text2); line-height: 1.5; }
 
 /* ── Debt bar ── */
 .debt-row {
   background: var(--surface); border: 1px solid var(--border);
-  border-radius: var(--r); padding: 18px 20px;
+  border-radius: var(--r); padding: 16px 20px;
   display: flex; align-items: center; gap: 20px; flex-wrap: wrap;
 }
-.debt-label { font-size: 12px; color: var(--text2); flex-shrink: 0; }
-.debt-num { font-family: 'IBM Plex Mono', monospace; font-size: 22px; font-weight: 500; color: var(--red); }
 .debt-breakdown { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px; }
 .debt-chip {
   background: var(--red-bg); border: 1px solid var(--red-br);
-  border-radius: 20px; padding: 3px 10px; font-size: 11px; color: var(--red);
-}
-
-/* ── Alert ── */
-.alert {
-  background: var(--amber-bg); border: 1px solid var(--amber-br);
-  border-radius: var(--rs); padding: 10px 14px;
-  font-size: 12px; color: var(--amber); margin-bottom: 16px;
+  border-radius: 20px; padding: 4px 12px; font-size: 11px; color: var(--red);
+  font-weight: 500;
 }
 
 /* ── Savings Goals ── */
-.goals-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+.goals-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 12px; }
 .goal-card {
   background: var(--surface); border: 1px solid var(--border);
   border-radius: var(--r); padding: 18px 20px;
   position: relative;
+  transition: all 0.2s;
+  overflow: hidden;
 }
-.goal-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
-.goal-name { font-size: 14px; font-weight: 500; color: var(--text); }
-.goal-due { font-size: 11px; color: var(--text3); margin-top: 2px; }
+.goal-card::before {
+  content: ''; position: absolute; top: 0; left: 0;
+  width: 3px; height: 100%; background: var(--accent);
+}
+.goal-card.done::before { background: var(--green); }
+.goal-card.warn::before { background: var(--amber); }
+.goal-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+.goal-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; }
+.goal-name { font-size: 15px; font-weight: 600; color: var(--text); }
+.goal-due { font-size: 11px; color: var(--text3); margin-top: 3px; }
 .goal-amounts { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 8px; }
-.goal-saved { font-family: 'IBM Plex Mono', monospace; font-size: 18px; font-weight: 500; color: var(--accent); }
+.goal-saved { font-family: 'IBM Plex Mono', monospace; font-size: 20px; font-weight: 600; color: var(--accent); }
 .goal-target { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--text3); }
-.goal-bar-wrap { height: 6px; background: var(--bg2); border-radius: 3px; overflow: hidden; margin-bottom: 8px; }
-.goal-bar-fill { height: 100%; border-radius: 3px; transition: width 0.6s ease; }
+.goal-bar-wrap { height: 6px; background: var(--bg2); border-radius: 3px; overflow: hidden; margin-bottom: 10px; }
+.goal-bar-fill { height: 100%; border-radius: 3px; transition: width 0.8s cubic-bezier(0.4,0,0.2,1); position: relative; }
+.goal-bar-fill::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  animation: shimmer 2s infinite;
+}
+@keyframes shimmer { 0% { transform: translateX(-100%);} 100% { transform: translateX(100%);} }
 .goal-bar-fill.safe { background: var(--accent); }
 .goal-bar-fill.warn { background: #c89a3a; }
 .goal-bar-fill.done { background: var(--green); }
 .goal-footer { display: flex; justify-content: space-between; font-size: 11px; color: var(--text3); }
-.goal-remain { color: var(--red); font-family: 'IBM Plex Mono', monospace; font-size: 12px; }
+.goal-remain { color: var(--red); font-family: 'IBM Plex Mono', monospace; font-size: 12px; font-weight: 500; }
 .goal-remain.done { color: var(--green); }
 .goal-actions { display: flex; gap: 4px; }
-.goal-btn { background: none; border: 1px solid var(--border2); border-radius: 4px; color: var(--text3); width: 24px; height: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 11px; transition: all 0.15s; }
+.goal-btn { background: none; border: 1px solid var(--border); border-radius: 6px; color: var(--text3); width: 26px; height: 26px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 11px; transition: all 0.15s; }
 .goal-btn:hover { background: var(--bg2); color: var(--text); }
 .goal-btn.del:hover { background: var(--red-bg); color: var(--red); border-color: var(--red-br); }
-.btn-add-goal {
-  background: none; border: 1px dashed var(--border2);
-  border-radius: var(--r); padding: 18px; text-align: center;
-  color: var(--text3); font-size: 13px; cursor: pointer;
-  transition: all 0.2s; width: 100%;
+.goal-monthly {
+  margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border);
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 11px; color: var(--text3);
 }
-.btn-add-goal:hover { background: var(--surface2); border-color: var(--border2); color: var(--text2); }
+.goal-monthly-amt { font-family: 'IBM Plex Mono', monospace; color: var(--amber); font-weight: 600; }
+.goal-quick-add {
+  background: none; border: 1px solid var(--border); border-radius: 6px;
+  padding: 3px 10px; font-size: 11px; color: var(--text2); cursor: pointer;
+  margin-left: 8px; font-family: 'Sarabun', sans-serif;
+  transition: all 0.15s;
+}
+.goal-quick-add:hover { background: var(--accent3); color: var(--accent); border-color: var(--accent); }
+.btn-add-goal {
+  background: none; border: 1.5px dashed var(--border2);
+  border-radius: var(--r); padding: 20px; text-align: center;
+  color: var(--text3); font-size: 13px; cursor: pointer;
+  transition: all 0.2s; width: 100%; font-family: 'Sarabun', sans-serif; font-weight: 500;
+}
+.btn-add-goal:hover { background: var(--surface); border-color: var(--accent); color: var(--accent); }
+
+/* ── Goal Presets ── */
+.preset-chips { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+.preset-chip {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 18px; padding: 5px 12px; font-size: 12px;
+  cursor: pointer; color: var(--text2); font-family: 'Sarabun', sans-serif;
+  transition: all 0.15s;
+}
+.preset-chip:hover { background: var(--accent3); color: var(--accent); border-color: var(--accent); }
+
+/* ── Quick Add Bar (TOP) ── */
+.quick-add-top {
+  background: linear-gradient(135deg, var(--surface) 0%, var(--surface2) 100%);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 18px 20px;
+  margin-bottom: 18px;
+  box-shadow: var(--shadow);
+  position: relative;
+  overflow: hidden;
+}
+.quick-add-top::before {
+  content: ''; position: absolute; top: -30%; left: -10%;
+  width: 280px; height: 280px;
+  background: radial-gradient(circle, var(--accent3) 0%, transparent 60%);
+  opacity: 0.4; pointer-events: none;
+}
+.qa-top-head {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 12px; position: relative; z-index: 1;
+}
+.qa-top-title {
+  font-size: 11px; color: var(--text3); letter-spacing: 0.16em;
+  text-transform: uppercase; font-weight: 700;
+  display: flex; align-items: center; gap: 8px;
+}
+.qa-top-hint { font-size: 11px; color: var(--text3); }
+.qa-top-hint kbd {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 4px; padding: 1px 6px; font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px; color: var(--text2);
+}
+
+/* Shortcut grid */
+.shortcut-grid {
+  display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px;
+  margin-bottom: 14px;
+  position: relative; z-index: 1;
+}
+.shortcut-btn {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; padding: 12px 8px;
+  cursor: pointer; transition: transform 0.2s cubic-bezier(0.4,0,0.2,1), box-shadow 0.2s, border-color 0.2s;
+  display: flex; flex-direction: column; align-items: center; gap: 5px;
+  font-family: 'Sarabun', sans-serif; color: var(--text);
+  position: relative; overflow: hidden;
+  min-height: 82px; justify-content: center;
+}
+.shortcut-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+}
+.shortcut-btn:active { transform: translateY(-1px); }
+/* default type accent */
+.shortcut-btn.income:not([data-customcolor]) { border-left: 3px solid var(--green); }
+.shortcut-btn.expense:not([data-customcolor]) { border-left: 3px solid var(--red); }
+/* custom colored buttons */
+.shortcut-btn[data-customcolor] {
+  border-color: transparent;
+  color: #fff;
+}
+.shortcut-btn[data-customcolor] .shortcut-amt { color: rgba(255,255,255,0.85); }
+.shortcut-btn[data-customcolor] .shortcut-name { color: #fff; }
+.shortcut-btn[data-customcolor]:hover { filter: brightness(1.08); }
+.shortcut-emoji { font-size: 24px; line-height: 1; }
+.shortcut-name {
+  font-size: 11px; font-weight: 600; color: var(--text);
+  text-align: center; line-height: 1.2;
+  display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden;
+  width: 100%;
+}
+.shortcut-amt {
+  font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+  color: var(--text3); font-weight: 500;
+}
+.shortcut-btn.income .shortcut-amt { color: var(--green); }
+.shortcut-btn.empty {
+  border-style: dashed; opacity: 0.55;
+  cursor: pointer;
+  background: transparent;
+}
+.shortcut-btn.empty:hover { opacity: 1; border-color: var(--accent); border-style: solid; }
+.shortcut-edit-icon {
+  position: absolute; top: 5px; right: 5px;
+  font-size: 10px; color: var(--text3); opacity: 0;
+  transition: opacity 0.15s;
+  background: var(--bg);
+  border-radius: 50%;
+  width: 18px; height: 18px;
+  display: flex; align-items: center; justify-content: center;
+  z-index: 2;
+}
+.shortcut-btn:hover .shortcut-edit-icon { opacity: 0.9; }
+.shortcut-btn[data-customcolor] .shortcut-edit-icon {
+  background: rgba(0,0,0,0.25); color: #fff;
+}
+.shortcut-flash {
+  position: absolute; inset: 0;
+  background: rgba(255,255,255,0.6); opacity: 0;
+  pointer-events: none;
+}
+.shortcut-flash.flash { animation: flashPulse 0.5s ease; }
+/* edit mode (jiggle) */
+.shortcut-grid.edit-mode .shortcut-btn:not(.empty) {
+  animation: jiggle 0.4s ease infinite alternate;
+  cursor: grab;
+}
+.shortcut-grid.edit-mode .shortcut-btn:not(.empty):active { cursor: grabbing; }
+@keyframes jiggle {
+  0% { transform: rotate(-1deg); }
+  100% { transform: rotate(1deg); }
+}
+.shortcut-grid.edit-mode .shortcut-btn.dragging {
+  opacity: 0.4; animation: none; transform: scale(0.95);
+}
+.shortcut-grid.edit-mode .shortcut-btn.drag-over {
+  outline: 2px dashed var(--accent); outline-offset: 2px;
+}
+.shortcut-remove-btn {
+  position: absolute; top: -5px; left: -5px;
+  width: 22px; height: 22px; border-radius: 50%;
+  background: var(--red); color: #fff;
+  border: 2px solid var(--bg);
+  display: none; align-items: center; justify-content: center;
+  font-size: 14px; line-height: 1; cursor: pointer;
+  font-weight: bold;
+  z-index: 3;
+}
+.shortcut-grid.edit-mode .shortcut-btn:not(.empty) .shortcut-remove-btn {
+  display: flex;
+}
+
+/* Toolbar above shortcuts */
+.shortcut-tools {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 10px; position: relative; z-index: 1;
+}
+.shortcut-tools-left { display: flex; gap: 6px; align-items: center; }
+.shortcut-action {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 18px; padding: 5px 11px; font-size: 11px; font-weight: 500;
+  color: var(--text2); cursor: pointer; transition: all 0.15s;
+  font-family: 'Sarabun', sans-serif;
+  display: inline-flex; align-items: center; gap: 4px;
+}
+.shortcut-action:hover { background: var(--bg2); color: var(--text); }
+.shortcut-action.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+.shortcut-action.danger:hover { background: var(--red-bg); color: var(--red); border-color: var(--red-br); }
+
+/* Color picker */
+.color-picker {
+  display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px;
+  margin-top: 4px;
+}
+.color-swatch {
+  width: 100%; aspect-ratio: 1; border-radius: 8px;
+  cursor: pointer; border: 2px solid transparent;
+  transition: transform 0.15s;
+  position: relative;
+}
+.color-swatch:hover { transform: scale(1.1); }
+.color-swatch.selected {
+  border-color: var(--text);
+  transform: scale(1.05);
+}
+.color-swatch.selected::after {
+  content: '✓'; position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-size: 13px; font-weight: bold;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+}
+.color-swatch.default {
+  background: var(--surface); border: 2px dashed var(--border2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; color: var(--text3);
+}
+.color-swatch.default.selected { border-color: var(--text); border-style: solid; }
+
+/* Emoji picker — search + scrollable */
+.emoji-search {
+  width: 100%; background: var(--bg); border: 1px solid var(--border);
+  border-radius: var(--rs); padding: 7px 10px;
+  font-family: 'Sarabun', sans-serif; font-size: 13px; color: var(--text);
+  outline: none; margin-bottom: 8px;
+}
+.emoji-search:focus { border-color: var(--accent); }
+.emoji-categories {
+  display: flex; gap: 4px; margin-bottom: 8px; overflow-x: auto;
+  padding-bottom: 4px;
+}
+.emoji-cat {
+  flex-shrink: 0; padding: 4px 9px; border-radius: 14px;
+  background: var(--bg2); border: 1px solid var(--border);
+  font-size: 11px; cursor: pointer; color: var(--text3);
+  font-family: 'Sarabun', sans-serif;
+  transition: all 0.15s;
+}
+.emoji-cat.on { background: var(--accent); color: #fff; border-color: var(--accent); }
+.emoji-grid {
+  display: grid; grid-template-columns: repeat(8, 1fr); gap: 4px;
+  max-height: 180px; overflow-y: auto;
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: var(--rs); padding: 8px;
+}
+.emoji-cell {
+  aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+  font-size: 20px; cursor: pointer; border-radius: 6px;
+  background: transparent; border: none;
+  transition: background 0.15s;
+}
+.emoji-cell:hover { background: var(--bg2); }
+.emoji-cell.selected { background: var(--accent3); outline: 2px solid var(--accent); }
+.emoji-custom {
+  margin-top: 6px; display: flex; gap: 6px; align-items: center;
+}
+.emoji-custom input {
+  flex: 1; background: var(--bg); border: 1px solid var(--border);
+  border-radius: var(--rs); padding: 7px 10px;
+  font-family: 'Sarabun', sans-serif; font-size: 13px; color: var(--text);
+  outline: none;
+}
+.emoji-custom input:focus { border-color: var(--accent); }
+.emoji-preview {
+  width: 38px; height: 38px; display: flex; align-items: center; justify-content: center;
+  background: var(--bg2); border: 1px solid var(--border); border-radius: var(--rs);
+  font-size: 22px;
+}
+
+/* Live preview of shortcut while editing */
+.shortcut-preview-wrap {
+  display: flex; gap: 14px; align-items: center;
+  background: var(--bg2); border-radius: var(--rs);
+  padding: 12px 14px; margin-bottom: 14px;
+}
+.shortcut-preview {
+  width: 90px; height: 90px; border-radius: 12px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 4px; flex-shrink: 0;
+  background: var(--surface); border: 1px solid var(--border);
+  transition: all 0.2s;
+}
+.shortcut-preview .pv-emoji { font-size: 26px; line-height: 1; }
+.shortcut-preview .pv-name { font-size: 11px; font-weight: 600; max-width: 80px; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.shortcut-preview .pv-amt { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--text3); }
+.shortcut-preview-info { font-size: 11px; color: var(--text3); line-height: 1.6; }
+@keyframes flashPulse {
+  0% { opacity: 0; }
+  30% { opacity: 0.25; }
+  100% { opacity: 0; }
+}
+
+/* Input row in quick-add-top */
+.quick-add {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 10px; padding: 10px 12px;
+  display: flex; gap: 8px; align-items: center;
+  margin-bottom: 0;
+  position: relative; z-index: 1;
+}
+.qa-input {
+  flex: 1; min-width: 0; background: var(--bg); border: 1px solid var(--border);
+  border-radius: var(--rs); padding: 9px 13px; font-family: 'Sarabun', sans-serif;
+  font-size: 14px; color: var(--text); outline: none;
+}
+.qa-input:focus { border-color: var(--accent); }
+.qa-amount {
+  width: 110px; background: var(--bg); border: 1px solid var(--border);
+  border-radius: var(--rs); padding: 9px 13px; font-family: 'IBM Plex Mono', monospace;
+  font-size: 14px; color: var(--text); outline: none; text-align: right;
+}
+.qa-amount:focus { border-color: var(--accent); }
+.qa-type {
+  display: flex; background: var(--bg); border: 1px solid var(--border);
+  border-radius: var(--rs); padding: 2px;
+}
+.qa-type-btn {
+  padding: 6px 10px; border-radius: 5px; font-size: 12px;
+  background: none; border: none; cursor: pointer; color: var(--text3);
+  font-family: 'Sarabun', sans-serif; font-weight: 500;
+  transition: all 0.15s;
+}
+.qa-type-btn.on.exp { background: var(--red-bg); color: var(--red); }
+.qa-type-btn.on.inc { background: var(--green-bg); color: var(--green); }
+.qa-go {
+  background: var(--accent); border: none; border-radius: var(--rs);
+  width: 38px; height: 38px; cursor: pointer; color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+}
+.qa-go:hover { background: var(--accent2); transform: scale(1.05); }
+.qa-go:active { transform: scale(0.95); }
+
+/* ── Templates row ── */
+.templates {
+  display: flex; gap: 6px; overflow-x: auto; padding: 2px 0 4px;
+  scrollbar-width: thin;
+  margin-bottom: 14px;
+}
+.templates::-webkit-scrollbar { height: 4px; }
+.template-chip {
+  flex-shrink: 0; background: var(--surface); border: 1px solid var(--border);
+  border-radius: 20px; padding: 6px 14px 6px 10px; font-size: 12px;
+  cursor: pointer; color: var(--text2); font-family: 'Sarabun', sans-serif;
+  display: flex; align-items: center; gap: 6px;
+  transition: all 0.15s;
+}
+.template-chip:hover { background: var(--accent3); color: var(--accent); border-color: var(--accent); transform: translateY(-1px); }
+.template-emoji { font-size: 14px; }
+.template-amt { font-family: 'IBM Plex Mono', monospace; color: var(--text3); font-size: 11px; }
+
+/* ── Alert ── */
+.alert {
+  background: var(--amber-bg); border: 1px solid var(--amber-br);
+  border-radius: var(--rs); padding: 12px 16px;
+  font-size: 12px; color: var(--amber); margin-bottom: 16px;
+  display: flex; align-items: center; gap: 10px;
+  font-weight: 500;
+}
 
 /* ── Tabs & Toolbar ── */
-.tabs { display: flex; gap: 2px; background: var(--surface2); padding: 3px; border-radius: var(--rs); border: 1px solid var(--border); width: fit-content; margin-bottom: 16px; }
-.tab { padding: 6px 16px; border-radius: 4px; font-size: 13px; cursor: pointer; transition: all 0.15s; color: var(--text3); border: none; background: none; font-family: 'Sarabun', sans-serif; }
-.tab.active { background: var(--surface); color: var(--text); border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+.tabs { display: flex; gap: 2px; background: var(--surface2); padding: 3px; border-radius: var(--rs); border: 1px solid var(--border); width: fit-content; margin-bottom: 14px; }
+.tab { padding: 7px 18px; border-radius: 5px; font-size: 13px; cursor: pointer; transition: all 0.15s; color: var(--text3); border: none; background: none; font-family: 'Sarabun', sans-serif; font-weight: 500; }
+.tab.active { background: var(--surface); color: var(--text); box-shadow: var(--shadow); }
 .tab:hover:not(.active) { color: var(--text2); }
 .toolbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; gap: 10px; flex-wrap: wrap; }
 .filter-row { display: flex; gap: 5px; flex-wrap: wrap; }
-.chip { padding: 4px 12px; border-radius: 20px; font-size: 12px; cursor: pointer; border: 1px solid var(--border); background: none; color: var(--text3); transition: all 0.15s; font-family: 'Sarabun', sans-serif; }
+.chip { padding: 5px 13px; border-radius: 20px; font-size: 12px; cursor: pointer; border: 1px solid var(--border); background: none; color: var(--text3); transition: all 0.15s; font-family: 'Sarabun', sans-serif; font-weight: 500; }
 .chip:hover { background: var(--surface2); color: var(--text2); }
 .chip.f-all.on { color: var(--text); border-color: var(--border2); background: var(--surface2); }
 .chip.f-paid.on { color: var(--green); border-color: var(--green-br); background: var(--green-bg); }
@@ -162,35 +695,42 @@ body {
 .btn-add {
   display: flex; align-items: center; gap: 5px;
   background: var(--accent); border: none; border-radius: var(--rs);
-  color: #fff; padding: 7px 14px; font-size: 13px; font-weight: 500;
-  cursor: pointer; transition: background 0.15s; font-family: 'Sarabun', sans-serif;
+  color: #fff; padding: 8px 16px; font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: all 0.15s; font-family: 'Sarabun', sans-serif;
 }
-.btn-add:hover { background: var(--accent2); }
+.btn-add:hover { background: var(--accent2); transform: translateY(-1px); box-shadow: var(--shadow); }
+.btn-copy {
+  display: flex; align-items: center; gap: 5px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--rs);
+  color: var(--text2); padding: 7px 14px; font-size: 13px; font-weight: 500;
+  cursor: pointer; transition: all 0.15s; font-family: 'Sarabun', sans-serif;
+}
+.btn-copy:hover { background: var(--bg2); color: var(--text); border-color: var(--border2); }
 
 /* ── Table ── */
-.table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; overflow-x: auto; }
+.table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; overflow-x: auto; box-shadow: var(--shadow); }
 table { width: 100%; border-collapse: collapse; min-width: 580px; }
 thead th {
-  padding: 10px 16px; text-align: left; font-size: 11px; font-weight: 600;
-  letter-spacing: 0.08em; text-transform: uppercase; color: var(--text3);
+  padding: 11px 16px; text-align: left; font-size: 10px; font-weight: 700;
+  letter-spacing: 0.12em; text-transform: uppercase; color: var(--text3);
   background: var(--bg2); border-bottom: 1px solid var(--border);
 }
 thead th.r { text-align: right; }
 tbody tr { border-bottom: 1px solid var(--border); transition: background 0.1s; }
 tbody tr:last-child { border-bottom: none; }
 tbody tr:hover { background: var(--bg2); }
-tbody td { padding: 11px 16px; vertical-align: middle; }
+tbody td { padding: 12px 16px; vertical-align: middle; }
 .td-name { font-size: 14px; font-weight: 500; }
 .td-note { font-size: 11px; color: var(--text3); margin-top: 1px; line-height: 1.3; }
-.td-cat { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 20px; background: var(--bg2); color: var(--text3); border: 1px solid var(--border); white-space: nowrap; }
+.td-cat { display: inline-block; font-size: 11px; padding: 3px 9px; border-radius: 20px; background: var(--bg2); color: var(--text3); border: 1px solid var(--border); white-space: nowrap; font-weight: 500; }
 .td-due { font-size: 12px; line-height: 1.4; }
-.td-due.overdue { color: var(--red); font-weight: 500; }
-.td-due.soon { color: var(--amber); }
+.td-due.overdue { color: var(--red); font-weight: 600; }
+.td-due.soon { color: var(--amber); font-weight: 500; }
 .td-due.ok { color: var(--text3); }
-.amt { font-family: 'IBM Plex Mono', monospace; font-size: 15px; font-weight: 500; white-space: nowrap; text-align: right; }
+.amt { font-family: 'IBM Plex Mono', monospace; font-size: 15px; font-weight: 600; white-space: nowrap; text-align: right; }
 .amt.income { color: var(--green); }
 .amt.expense { color: var(--text); }
-.badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 20px; font-size: 11px; font-weight: 500; cursor: pointer; transition: all 0.15s; border: 1px solid transparent; white-space: nowrap; }
+.badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.15s; border: 1px solid transparent; white-space: nowrap; }
 .badge .dot { width: 5px; height: 5px; border-radius: 50%; }
 .badge.paid { background: var(--green-bg); color: var(--green); border-color: var(--green-br); }
 .badge.paid .dot { background: var(--green); }
@@ -198,64 +738,147 @@ tbody td { padding: 11px 16px; vertical-align: middle; }
 .badge.unpaid .dot { background: var(--red); }
 .badge.pending { background: var(--amber-bg); color: var(--amber); border-color: var(--amber-br); }
 .badge.pending .dot { background: var(--amber); }
-.badge:hover { filter: brightness(0.93); }
+.badge:hover { filter: brightness(0.95); }
 .row-btns { display: flex; gap: 3px; justify-content: flex-end; }
-.row-btn { width: 26px; height: 26px; border-radius: 4px; background: none; border: 1px solid var(--border); color: var(--text3); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 12px; transition: all 0.15s; }
+.row-btn { width: 28px; height: 28px; border-radius: 6px; background: none; border: 1px solid var(--border); color: var(--text3); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 12px; transition: all 0.15s; }
 .row-btn:hover { background: var(--bg2); color: var(--text); }
 .row-btn.del:hover { background: var(--red-bg); color: var(--red); border-color: var(--red-br); }
-.empty { padding: 48px 24px; text-align: center; color: var(--text3); font-size: 13px; }
+.empty { padding: 56px 24px; text-align: center; color: var(--text3); font-size: 13px; }
+
+/* ── Floating Action Button ── */
+.fab {
+  position: fixed; bottom: 24px; right: 24px;
+  width: 60px; height: 60px; border-radius: 50%;
+  background: var(--accent); border: none; cursor: pointer;
+  color: #fff; display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 6px 20px rgba(74,103,65,0.4);
+  transition: all 0.2s;
+  z-index: 50;
+  font-size: 26px;
+}
+.fab:hover { transform: scale(1.08) rotate(90deg); box-shadow: 0 8px 28px rgba(74,103,65,0.5); }
+.fab:active { transform: scale(0.95); }
 
 /* ── Modal ── */
-.backdrop { display: none; position: fixed; inset: 0; background: rgba(44,42,39,0.45); backdrop-filter: blur(3px); z-index: 100; align-items: center; justify-content: center; padding: 16px; }
+.backdrop { display: none; position: fixed; inset: 0; background: rgba(44,42,39,0.55); backdrop-filter: blur(6px); z-index: 100; align-items: center; justify-content: center; padding: 16px; }
+[data-theme="dark"] .backdrop { background: rgba(0,0,0,0.7); }
 .backdrop.open { display: flex; }
-.modal { background: var(--surface); border: 1px solid var(--border2); border-radius: 14px; padding: 26px; width: 500px; max-width: 100%; box-shadow: 0 20px 60px rgba(0,0,0,0.15); animation: up 0.2s ease; max-height: 90vh; overflow-y: auto; }
-@keyframes up { from { transform: translateY(12px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-.modal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-.modal-title { font-family: 'Noto Serif Display', serif; font-size: 18px; font-weight: 300; color: var(--text); }
-.modal-x { background: none; border: 1px solid var(--border); color: var(--text3); width: 28px; height: 28px; border-radius: 4px; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; }
-.modal-x:hover { background: var(--bg2); }
+.modal { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 28px; width: 520px; max-width: 100%; box-shadow: var(--shadow-lg); animation: up 0.25s cubic-bezier(0.4,0,0.2,1); max-height: 90vh; overflow-y: auto; }
+@keyframes up { from { transform: translateY(20px) scale(0.96); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
+.modal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px; }
+.modal-title { font-family: 'Fraunces', serif; font-size: 22px; font-weight: 400; color: var(--text); font-style: italic; letter-spacing: -0.01em; }
+.modal-x { background: none; border: 1px solid var(--border); color: var(--text3); width: 32px; height: 32px; border-radius: 8px; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+.modal-x:hover { background: var(--bg2); color: var(--text); }
 .fg { margin-bottom: 14px; }
-.fl { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text3); margin-bottom: 6px; display: block; }
+.fl { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text3); margin-bottom: 6px; display: block; }
 .fi, .fs {
-  width: 100%; background: var(--bg); border: 1px solid var(--border2);
+  width: 100%; background: var(--bg); border: 1px solid var(--border);
   border-radius: var(--rs); color: var(--text); font-family: 'Sarabun', sans-serif;
-  font-size: 14px; padding: 8px 11px; outline: none; transition: border-color 0.15s; appearance: none;
+  font-size: 14px; padding: 10px 13px; outline: none; transition: border-color 0.15s; appearance: none;
 }
 .fi::placeholder { color: var(--text3); }
 .fi:focus, .fs:focus { border-color: var(--accent); }
-.fs option { background: #faf8f5; }
+.fs option { background: var(--surface); }
 .frow { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .type-row { display: flex; gap: 6px; }
-.type-btn { flex: 1; padding: 8px; border-radius: var(--rs); font-size: 13px; cursor: pointer; border: 1px solid var(--border2); background: none; color: var(--text3); font-family: 'Sarabun', sans-serif; transition: all 0.15s; }
+.type-btn { flex: 1; padding: 9px; border-radius: var(--rs); font-size: 13px; cursor: pointer; border: 1px solid var(--border); background: none; color: var(--text3); font-family: 'Sarabun', sans-serif; transition: all 0.15s; font-weight: 500; }
 .type-btn.expense.on { background: var(--red-bg); color: var(--red); border-color: var(--red-br); }
 .type-btn.income.on { background: var(--green-bg); color: var(--green); border-color: var(--green-br); }
-.modal-foot { display: flex; gap: 8px; margin-top: 20px; }
-.btn-cancel { flex: 1; padding: 9px; border-radius: var(--rs); font-size: 13px; cursor: pointer; background: none; border: 1px solid var(--border2); color: var(--text2); font-family: 'Sarabun', sans-serif; }
+.modal-foot { display: flex; gap: 8px; margin-top: 22px; }
+.btn-cancel { flex: 1; padding: 10px; border-radius: var(--rs); font-size: 13px; cursor: pointer; background: none; border: 1px solid var(--border); color: var(--text2); font-family: 'Sarabun', sans-serif; font-weight: 500; }
 .btn-cancel:hover { background: var(--bg2); }
-.btn-ok { flex: 2; padding: 9px; border-radius: var(--rs); font-size: 13px; font-weight: 600; cursor: pointer; background: var(--accent); border: none; color: #fff; font-family: 'Sarabun', sans-serif; }
+.btn-ok { flex: 2; padding: 10px; border-radius: var(--rs); font-size: 13px; font-weight: 600; cursor: pointer; background: var(--accent); border: none; color: #fff; font-family: 'Sarabun', sans-serif; }
 .btn-ok:hover { background: var(--accent2); }
 
-/* ── Goal Modal extra ── */
+/* Goal Modal */
 .progress-preview { height: 6px; background: var(--bg2); border-radius: 3px; overflow: hidden; margin-top: 6px; }
-.progress-preview-fill { height: 100%; background: var(--accent); border-radius: 3px; transition: width 0.3s; }
+.progress-preview-fill { height: 100%; background: var(--accent); border-radius: 3px; transition: width 0.4s; }
 
-/* ── Toast ── */
-.toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(60px); background: var(--text); color: var(--bg); font-size: 12px; padding: 9px 16px; border-radius: 20px; z-index: 200; transition: transform 0.25s; white-space: nowrap; }
+/* Onboarding */
+.onb-backdrop { position: fixed; inset: 0; background: var(--bg); z-index: 1000; display: none; align-items: center; justify-content: center; padding: 20px; }
+.onb-backdrop.open { display: flex; }
+.onb {
+  max-width: 480px; width: 100%; text-align: center;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 20px; padding: 36px 32px;
+  box-shadow: var(--shadow-lg);
+  animation: up 0.4s cubic-bezier(0.4,0,0.2,1);
+}
+.onb-emoji { font-size: 48px; margin-bottom: 14px; }
+.onb-title { font-family: 'Fraunces', serif; font-size: 28px; font-style: italic; font-weight: 400; line-height: 1.2; margin-bottom: 10px; letter-spacing: -0.01em; }
+.onb-text { font-size: 14px; color: var(--text2); line-height: 1.6; margin-bottom: 24px; }
+.onb-features { display: flex; flex-direction: column; gap: 10px; margin-bottom: 26px; text-align: left; }
+.onb-feat { display: flex; gap: 12px; align-items: center; background: var(--bg2); padding: 12px 14px; border-radius: 10px; }
+.onb-feat-icon { font-size: 20px; }
+.onb-feat-text { font-size: 13px; color: var(--text); }
+.onb-feat-text b { font-weight: 600; }
+
+/* Toast */
+.toast { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%) translateY(60px); background: var(--text); color: var(--bg); font-size: 13px; padding: 10px 18px; border-radius: 22px; z-index: 200; transition: transform 0.3s cubic-bezier(0.4,0,0.2,1); white-space: nowrap; font-weight: 500; box-shadow: var(--shadow-lg); }
 .toast.show { transform: translateX(-50%) translateY(0); }
 
-::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: var(--bg); }
 ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text3); }
 
+/* Responsive */
+@media (max-width: 880px) {
+  .charts-grid { grid-template-columns: 1fr; }
+  .shortcut-grid { grid-template-columns: repeat(4, 1fr); }
+}
 @media (max-width: 680px) {
-  .summary-grid { grid-template-columns: 1fr 1fr; }
-  .summary-grid .sum-card:last-child { grid-column: 1/-1; }
+  .app { padding: 20px 14px 100px; }
+  .summary-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .sum-card { padding: 13px 14px; }
+  .sum-amount { font-size: 17px; }
+  .hero { padding: 22px 22px; }
+  .hero-content { flex-direction: column; align-items: flex-start; }
+  .hero-right { align-self: stretch; }
+  .savings-rate { width: 100%; }
   .frow { grid-template-columns: 1fr; }
-  .header { flex-direction: column; align-items: flex-start; }
+  .header { flex-direction: column; align-items: flex-start; gap: 12px; }
+  .header-tools { width: 100%; justify-content: space-between; }
+  .quick-add { flex-wrap: wrap; }
+  .qa-amount { flex: 1; min-width: 100px; }
+  .qa-input { width: 100%; flex: 1 1 100%; order: -1; }
+  .fab { width: 54px; height: 54px; bottom: 18px; right: 18px; font-size: 24px; }
+  .donut-wrap { flex-direction: column; align-items: stretch; }
+  .donut { margin: 0 auto; }
+  .shortcut-grid { grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .shortcut-btn { min-height: 70px; padding: 10px 6px; }
+  .shortcut-emoji { font-size: 20px; }
+  .quick-add-top { padding: 14px; }
+}
+@media (max-width: 420px) {
+  .brand-title { font-size: 24px; }
+}
+
+/* Print */
+@media print {
+  body { background: #fff; color: #000; }
+  .fab, .header-tools, .quick-add, .templates, .toolbar, .row-btn, .goal-actions, .btn-add-goal { display: none !important; }
+  .hero, .sum-card, .chart-card, .goal-card, .table-wrap { box-shadow: none; border: 1px solid #ccc; break-inside: avoid; }
 }
 </style>
 </head>
 <body>
+
+<!-- ── Onboarding ── -->
+<div class="onb-backdrop" id="onbBackdrop">
+  <div class="onb">
+    <div class="onb-emoji">✨</div>
+    <div class="onb-title">เริ่มต้นจัดการเงิน<br/>ของคุณอย่างเป็นระบบ</div>
+    <div class="onb-text">บันทึกรายรับ-รายจ่าย ตั้งเป้าหมายการออม<br/>และเห็นภาพรวมการเงินของคุณในที่เดียว</div>
+    <div class="onb-features">
+      <div class="onb-feat"><div class="onb-feat-icon">⚡</div><div class="onb-feat-text"><b>บันทึกเร็ว</b> — เพิ่มรายการได้ใน 3 วินาที</div></div>
+      <div class="onb-feat"><div class="onb-feat-icon">📊</div><div class="onb-feat-text"><b>เห็นภาพรวม</b> — กราฟ และ insight อัตโนมัติ</div></div>
+      <div class="onb-feat"><div class="onb-feat-icon">🎯</div><div class="onb-feat-text"><b>ตั้งเป้าหมาย</b> — คำนวณยอดออมต่อเดือนให้</div></div>
+    </div>
+    <button class="btn-ok" style="width:100%;padding:13px" onclick="finishOnb()">เริ่มต้นใช้งาน →</button>
+  </div>
+</div>
+
 <div class="app">
 
   <!-- Header -->
@@ -264,42 +887,137 @@ tbody td { padding: 11px 16px; vertical-align: middle; }
       <div class="brand-title">Finance</div>
       <div class="brand-sub">บันทึกการเงินส่วนตัว</div>
     </div>
-    <div class="month-bar">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="color:var(--text3)"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-      <select id="selMonth" onchange="renderAll()"></select>
-      <select id="selYear" onchange="renderAll()"></select>
+    <div class="header-tools">
+      <div class="month-bar">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <select id="selMonth" onchange="renderAll()"></select>
+        <select id="selYear" onchange="renderAll()"></select>
+      </div>
+      <button class="icon-btn" onclick="toggleTheme()" title="สลับธีม" id="themeBtn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+      <button class="icon-btn" onclick="exportData()" title="Export ข้อมูล">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      </button>
+      <button class="icon-btn" onclick="window.print()" title="พิมพ์/PDF">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+      </button>
     </div>
   </div>
 
-  <!-- Summary -->
-  <div class="section-title">ภาพรวมเดือนนี้</div>
+  <!-- Hero: Balance focal point -->
+  <div class="hero">
+    <div class="hero-content">
+      <div class="hero-left">
+        <div class="hero-label">คงเหลือสุทธิเดือนนี้</div>
+        <div class="hero-amount" id="heroBalance"><span class="sign">฿</span>0</div>
+        <div class="hero-sub">
+          <div class="hero-mini inc"><span class="hero-mini-dot"></span><span>รายรับ <b class="mono" id="heroInc">฿0</b></span></div>
+          <div class="hero-mini exp"><span class="hero-mini-dot"></span><span>รายจ่าย <b class="mono" id="heroExp">฿0</b></span></div>
+        </div>
+      </div>
+      <div class="hero-right">
+        <div class="savings-rate">
+          <div class="sr-ring">
+            <svg width="56" height="56">
+              <circle class="sr-ring-track" cx="28" cy="28" r="24"/>
+              <circle class="sr-ring-fill" cx="28" cy="28" r="24" id="srRingFill" stroke-dasharray="150.8" stroke-dashoffset="150.8"/>
+            </svg>
+            <div class="sr-ring-pct" id="srPct">0%</div>
+          </div>
+          <div class="sr-info">
+            <div class="sr-info-label">อัตราการออม</div>
+            <div class="sr-info-text" id="srText">เป้าหมาย 20%</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ⚡ Quick Add Section (TOP) -->
+  <div class="quick-add-top">
+    <div class="qa-top-head">
+      <div class="qa-top-title">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        บันทึกด่วน
+      </div>
+      <div class="qa-top-hint" id="qaTopHint">กดปุ่มลัด หรือพิมพ์ <kbd>↵</kbd> เพื่อบันทึก</div>
+    </div>
+
+    <!-- Shortcut Tools -->
+    <div class="shortcut-tools">
+      <div class="shortcut-tools-left">
+        <button class="shortcut-action" onclick="addShortcut()" title="เพิ่มปุ่มลัดใหม่">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          เพิ่มปุ่ม
+        </button>
+        <button class="shortcut-action" id="editModeBtn" onclick="toggleEditMode()" title="โหมดแก้ไข">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          จัดเรียง / ลบ
+        </button>
+      </div>
+      <div style="font-size:11px;color:var(--text3);display:flex;align-items:center;gap:4px" id="shortcutInfo">
+        <span id="shortcutCount">0 ปุ่ม</span>
+      </div>
+    </div>
+
+    <!-- Smart Shortcut Pad -->
+    <div class="shortcut-grid" id="shortcutGrid"></div>
+
+    <!-- Quick text input -->
+    <div class="quick-add">
+      <input class="qa-input" id="qaName" placeholder="พิมพ์ชื่อรายการ เช่น กาแฟ, เงินเดือน…" onkeydown="qaKey(event)"/>
+      <input class="qa-amount mono" id="qaAmt" type="number" placeholder="0.00" onkeydown="qaKey(event)"/>
+      <div class="qa-type">
+        <button class="qa-type-btn exp on" id="qaTypeExp" onclick="qaSetType('expense')">จ่าย</button>
+        <button class="qa-type-btn inc" id="qaTypeInc" onclick="qaSetType('income')">รับ</button>
+      </div>
+      <button class="qa-go" onclick="qaSubmit()" title="บันทึก (Enter)">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Summary mini cards -->
   <div class="summary-grid">
-    <div class="sum-card">
+    <div class="sum-card inc">
+      <div class="sum-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+      </div>
       <div class="sum-label">รายรับ</div>
       <div class="sum-amount c-income mono" id="sIncome">฿0</div>
       <div class="sum-sub" id="sIncomeN">0 รายการ</div>
     </div>
-    <div class="sum-card">
+    <div class="sum-card exp">
+      <div class="sum-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg>
+      </div>
       <div class="sum-label">รายจ่าย</div>
       <div class="sum-amount c-expense mono" id="sExpense">฿0</div>
       <div class="sum-sub" id="sExpenseN">0 รายการ</div>
     </div>
-    <div class="sum-card">
+    <div class="sum-card bal">
+      <div class="sum-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+      </div>
       <div class="sum-label">คงเหลือ</div>
       <div class="sum-amount c-balance mono" id="sBalance">฿0</div>
       <div class="sum-sub" id="sUnpaid">—</div>
     </div>
     <div class="sum-card debt-card">
-      <div class="sum-label">หนี้สินรวม (ค้างชำระ)</div>
+      <div class="sum-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      </div>
+      <div class="sum-label">หนี้ค้างชำระ</div>
       <div class="sum-amount c-debt mono" id="sDebt">฿0</div>
       <div class="sum-sub" id="sDebtN">0 รายการ</div>
     </div>
   </div>
 
   <!-- Debt breakdown -->
-  <div id="debtBreakWrap" style="margin-top:10px;display:none">
+  <div id="debtBreakWrap" style="margin-top:12px;display:none">
     <div class="debt-row">
-      <div>
+      <div style="flex:1">
         <div class="sum-label">รายละเอียดหนี้ค้างชำระ</div>
         <div id="debtChips" class="debt-breakdown"></div>
       </div>
@@ -309,15 +1027,55 @@ tbody td { padding: 11px 16px; vertical-align: middle; }
   <!-- Alert -->
   <div id="alertBox" class="alert" style="display:none;margin-top:12px"></div>
 
+  <!-- Insights -->
+  <div class="section-title">ข้อสังเกตอัจฉริยะ</div>
+  <div class="insights" id="insightsBox"></div>
+
+  <!-- Charts -->
+  <div class="section-title" style="margin-top:32px">วิเคราะห์การเงิน</div>
+  <div class="charts-grid">
+    <div class="chart-card">
+      <div class="chart-head">
+        <div>
+          <div class="chart-title">รายรับ vs รายจ่าย</div>
+          <div class="chart-sub">6 เดือนล่าสุด</div>
+        </div>
+      </div>
+      <div class="bars" id="barsBox"></div>
+      <div class="bar-legend">
+        <span><span class="bar-legend-dot" style="background:var(--accent)"></span>รายรับ</span>
+        <span><span class="bar-legend-dot" style="background:var(--red);opacity:0.85"></span>รายจ่าย</span>
+      </div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-head">
+        <div>
+          <div class="chart-title">รายจ่ายตามหมวด</div>
+          <div class="chart-sub">เดือนนี้</div>
+        </div>
+      </div>
+      <div class="donut-wrap" id="donutWrap"></div>
+    </div>
+  </div>
+
   <!-- Savings Goals -->
-  <div class="section-title" style="margin-top:32px">เป้าหมายการออม / ค่าใช้จ่ายก้อนใหญ่</div>
+  <div class="section-title" style="margin-top:32px">เป้าหมายการออม <span class="st-extra" id="goalsCount"></span></div>
   <div class="goals-grid" id="goalsGrid"></div>
   <div style="margin-top:10px">
     <button class="btn-add-goal" onclick="openGoalModal()">+ เพิ่มเป้าหมายการออม</button>
+    <div class="preset-chips">
+      <span style="font-size:11px;color:var(--text3);margin-right:6px;align-self:center">เริ่มจาก preset:</span>
+      <span class="preset-chip" onclick="usePreset('house')">🏠 ดาวน์บ้าน</span>
+      <span class="preset-chip" onclick="usePreset('wedding')">💍 แต่งงาน</span>
+      <span class="preset-chip" onclick="usePreset('car')">🚗 ซื้อรถ</span>
+      <span class="preset-chip" onclick="usePreset('emergency')">🆘 เงินสำรองฉุกเฉิน</span>
+      <span class="preset-chip" onclick="usePreset('travel')">✈️ ท่องเที่ยว</span>
+      <span class="preset-chip" onclick="usePreset('retire')">🌴 เกษียณ</span>
+    </div>
   </div>
 
-  <!-- Transactions -->
-  <div class="section-title" style="margin-top:32px">รายการรายรับ-รายจ่าย</div>
+  <!-- Tabs (transaction list filters) -->
+  <div class="section-title" style="margin-top:32px">รายการทั้งหมด</div>
 
   <div class="tabs">
     <button class="tab active" data-tab="all" onclick="switchTab('all')">ทั้งหมด</button>
@@ -331,7 +1089,13 @@ tbody td { padding: 11px 16px; vertical-align: middle; }
       <button class="chip f-paid" onclick="setFilter('paid')">ชำระแล้ว</button>
       <button class="chip f-unpaid" onclick="setFilter('unpaid')">ค้างชำระ</button>
     </div>
-    <button class="btn-add" onclick="openTxModal()">+ เพิ่มรายการ</button>
+    <div style="display:flex;gap:6px">
+      <button class="btn-copy" onclick="openCopyModal()" title="คัดลอกรายการจากเดือนก่อน">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        คัดลอกเดือนก่อน
+      </button>
+      <button class="btn-add" onclick="openTxModal()">+ เพิ่มแบบละเอียด</button>
+    </div>
   </div>
 
   <div class="table-wrap">
@@ -352,6 +1116,85 @@ tbody td { padding: 11px 16px; vertical-align: middle; }
   </div>
 
 </div><!-- /app -->
+
+<!-- FAB -->
+<button class="fab" onclick="openTxModal()" title="เพิ่มรายการแบบละเอียด">+</button>
+
+<!-- ── Shortcut Edit Modal (Designer) ── -->
+<div class="backdrop" id="shortcutBackdrop" onclick="closeShortcutIfBg(event)">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-head">
+      <div class="modal-title" id="shortcutModalTitle">ออกแบบปุ่มลัด</div>
+      <button class="modal-x" onclick="closeShortcutModal()">✕</button>
+    </div>
+
+    <!-- Live Preview -->
+    <div class="shortcut-preview-wrap">
+      <div class="shortcut-preview" id="scPreview">
+        <span class="pv-emoji" id="pvEmoji">💸</span>
+        <span class="pv-name" id="pvName">ชื่อปุ่ม</span>
+        <span class="pv-amt" id="pvAmt">฿0</span>
+      </div>
+      <div class="shortcut-preview-info">
+        <b style="color:var(--text2)">ตัวอย่าง</b><br>
+        ปรับด้านล่างเพื่อดูผล<br>
+        กดปุ่มจริง = บันทึกทันที
+      </div>
+    </div>
+
+    <div class="fg">
+      <label class="fl">ประเภท</label>
+      <div class="type-row">
+        <button class="type-btn expense on" id="scBtnExp" onclick="scSetType('expense')">💸 รายจ่าย</button>
+        <button class="type-btn income" id="scBtnInc" onclick="scSetType('income')">💰 รายรับ</button>
+      </div>
+    </div>
+
+    <div class="fg">
+      <label class="fl">ไอคอน — ค้นหา / พิมพ์เอง</label>
+      <input class="emoji-search" id="scEmojiSearch" placeholder="🔎 ค้นหา: กาแฟ, food, car, money…" oninput="filterEmojis()"/>
+      <div class="emoji-categories" id="scEmojiCats"></div>
+      <div class="emoji-grid" id="scEmojiGrid"></div>
+      <div class="emoji-custom">
+        <span style="font-size:11px;color:var(--text3)">หรือพิมพ์เอง:</span>
+        <input id="scEmojiCustom" placeholder="วาง emoji / สัญลักษณ์" maxlength="4" oninput="setCustomEmoji()"/>
+        <div class="emoji-preview" id="scEmojiSelected">💸</div>
+      </div>
+    </div>
+
+    <div class="fg">
+      <label class="fl">สีพื้นปุ่ม (ตามใจ)</label>
+      <div class="color-picker" id="scColorPicker"></div>
+    </div>
+
+    <div class="fg"><label class="fl">ชื่อ</label><input class="fi" id="scName" placeholder="เช่น กาแฟ, ข้าวเที่ยง" maxlength="20" oninput="updatePreview()"/></div>
+    <div class="frow">
+      <div class="fg"><label class="fl">จำนวน (บาท)</label><input class="fi mono" id="scAmt" type="number" step="0.01" placeholder="0.00 (เว้นได้)" oninput="updatePreview()"/></div>
+      <div class="fg">
+        <label class="fl">หมวดหมู่</label>
+        <select class="fs" id="scCat">
+          <option value="อาหาร">🍜 อาหาร</option>
+          <option value="เดินทาง">🚗 เดินทาง</option>
+          <option value="ออนไลน์/ช็อปปิ้ง">🛍️ ออนไลน์/ช็อปปิ้ง</option>
+          <option value="สาธารณูปโภค">💡 สาธารณูปโภค</option>
+          <option value="อินเตอร์เน็ต">📶 อินเตอร์เน็ต</option>
+          <option value="หนี้/สินเชื่อ">💳 หนี้/สินเชื่อ</option>
+          <option value="ประกัน">🛡️ ประกัน</option>
+          <option value="ออมทรัพย์">💰 ออมทรัพย์</option>
+          <option value="หุ้น/การลงทุน">📈 หุ้น/การลงทุน</option>
+          <option value="เงินเดือน">💼 เงินเดือน</option>
+          <option value="รายได้อื่น">📊 รายได้อื่น</option>
+          <option value="อื่นๆ">📋 อื่นๆ</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-cancel" id="scDelBtn" onclick="deleteShortcut()" style="display:none;color:var(--red);border-color:var(--red-br)">🗑 ลบ</button>
+      <button class="btn-cancel" onclick="closeShortcutModal()">ยกเลิก</button>
+      <button class="btn-ok" onclick="saveShortcut()">บันทึก</button>
+    </div>
+  </div>
+</div>
 
 <!-- ── Transaction Modal ── -->
 <div class="backdrop" id="txBackdrop" onclick="closeTxIfBg(event)">
@@ -412,10 +1255,10 @@ tbody td { padding: 11px 16px; vertical-align: middle; }
 <div class="backdrop" id="goalBackdrop" onclick="closeGoalIfBg(event)">
   <div class="modal">
     <div class="modal-head">
-      <div class="modal-title" id="goalModalTitle">เพิ่มเป้าหมายการออม</div>
+      <div class="modal-title" id="goalModalTitle">เพิ่มเป้าหมาย</div>
       <button class="modal-x" onclick="closeGoalModal()">✕</button>
     </div>
-    <div class="fg"><label class="fl">ชื่อเป้าหมาย</label><input class="fi" id="gName" placeholder="เช่น ค่าประกันสุขภาพ, ประกันรถ…"/></div>
+    <div class="fg"><label class="fl">ชื่อเป้าหมาย</label><input class="fi" id="gName" placeholder="เช่น ค่าประกันสุขภาพ, ดาวน์บ้าน…"/></div>
     <div class="frow">
       <div class="fg"><label class="fl">ยอดเป้าหมาย (บาท)</label><input class="fi" id="gTarget" type="number" min="0" step="0.01" placeholder="0.00" oninput="updateGoalPreview()"/></div>
       <div class="fg"><label class="fl">ออมแล้ว (บาท)</label><input class="fi" id="gSaved" type="number" min="0" step="0.01" placeholder="0.00" oninput="updateGoalPreview()"/></div>
@@ -426,7 +1269,7 @@ tbody td { padding: 11px 16px; vertical-align: middle; }
       <div style="font-size:11px;color:var(--text3);margin-top:4px" id="gPreviewTxt">ออมแล้ว 0%</div>
     </div>
     <div class="frow">
-      <div class="fg"><label class="fl">กำหนดชำระ</label><input class="fi" id="gDue" type="date"/></div>
+      <div class="fg"><label class="fl">กำหนดถึง</label><input class="fi" id="gDue" type="date" oninput="updateGoalPreview()"/></div>
       <div class="fg"><label class="fl">ควรออมต่อเดือน</label><input class="fi mono" id="gMonthly" placeholder="คำนวณอัตโนมัติ" readonly style="background:var(--bg2);color:var(--text2)"/></div>
     </div>
     <div class="fg"><label class="fl">หมายเหตุ</label><input class="fi" id="gNote" placeholder="รายละเอียด…"/></div>
@@ -437,15 +1280,77 @@ tbody td { padding: 11px 16px; vertical-align: middle; }
   </div>
 </div>
 
+<!-- ── Add to Goal Modal ── -->
+<div class="backdrop" id="addToGoalBackdrop" onclick="closeAddToGoalIfBg(event)">
+  <div class="modal" style="max-width:380px">
+    <div class="modal-head">
+      <div class="modal-title">เพิ่มเงินออม</div>
+      <button class="modal-x" onclick="closeAddToGoal()">✕</button>
+    </div>
+    <div class="fg"><label class="fl">เป้าหมาย</label><div id="atgName" style="font-size:15px;font-weight:600">—</div></div>
+    <div class="fg"><label class="fl">จำนวน (บาท)</label><input class="fi mono" id="atgAmt" type="number" step="0.01" placeholder="0.00" autofocus/></div>
+    <div class="modal-foot">
+      <button class="btn-cancel" onclick="closeAddToGoal()">ยกเลิก</button>
+      <button class="btn-ok" onclick="doAddToGoal()">เพิ่ม</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Copy Modal ── -->
+<div class="backdrop" id="copyBackdrop" onclick="closeCopyIfBg(event)">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">คัดลอกจากเดือนก่อน</div>
+      <button class="modal-x" onclick="closeCopyModal()">✕</button>
+    </div>
+    <div style="background:var(--bg2);border-radius:var(--rs);padding:12px 14px;margin-bottom:16px;font-size:12px;color:var(--text2);line-height:1.6">
+      💡 ระบบจะคัดลอกรายการทั้งหมดจากเดือนที่เลือกมายัง <b id="copyTargetMonth">เดือนนี้</b><br>
+      • รายการรายจ่ายจะถูกตั้งเป็น <b style="color:var(--red)">ค้างชำระ</b><br>
+      • วันที่กำหนดชำระจะเลื่อนมาเป็นเดือนนี้อัตโนมัติ<br>
+      • จำนวนเงินจะคงเดิม (แก้ไขทีหลังได้)
+    </div>
+    <div class="fg">
+      <label class="fl">เลือกเดือนต้นทาง</label>
+      <select class="fs" id="copyFromMonth"></select>
+    </div>
+    <div id="copyPreview" style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--rs);padding:12px;margin-top:12px;font-size:12px;color:var(--text2);max-height:200px;overflow-y:auto">
+      เลือกเดือนเพื่อดูตัวอย่าง
+    </div>
+    <div class="modal-foot">
+      <button class="btn-cancel" onclick="closeCopyModal()">ยกเลิก</button>
+      <button class="btn-ok" onclick="doCopy()" id="btnDoCopy" disabled>คัดลอกรายการ</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
 const MONTHS = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+const MONTHS_SHORT = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+const CAT_EMOJI = {
+  'หนี้/สินเชื่อ':'💳','ประกัน':'🛡️','อินเตอร์เน็ต':'📶','ออนไลน์/ช็อปปิ้ง':'🛍️',
+  'สาธารณูปโภค':'💡','ออมทรัพย์':'💰','หุ้น/การลงทุน':'📈','อาหาร':'🍜',
+  'เดินทาง':'🚗','เงินเดือน':'💼','รายได้อื่น':'📊','อื่นๆ':'📋'
+};
+const CAT_COLORS = ['#4a6741','#9b4a3a','#8a6a2a','#2e5a8a','#6b4a7d','#3d6b38','#c89a3a','#5c7d52','#a85c4a','#7d6a4a'];
+
+const PRESETS = {
+  house: {name:'ดาวน์บ้าน', target:200000, note:'ดาวน์ 10-20% ของราคาบ้าน'},
+  wedding: {name:'แต่งงาน', target:300000, note:'งบกลางๆ สำหรับงานแต่ง'},
+  car: {name:'ซื้อรถ', target:100000, note:'ดาวน์รถ 20%'},
+  emergency: {name:'เงินสำรองฉุกเฉิน', target:60000, note:'6 เดือนของค่าใช้จ่าย'},
+  travel: {name:'ท่องเที่ยว', target:30000, note:'ทริปต่างประเทศ'},
+  retire: {name:'เกษียณ', target:1000000, note:'เก็บไว้ตอนแก่'}
+};
 
 let txs   = JSON.parse(localStorage.getItem('fin_tx')   || 'null');
 let goals = JSON.parse(localStorage.getItem('fin_goals') || '[]');
+let theme = localStorage.getItem('fin_theme') || 'light';
+let onbDone = localStorage.getItem('fin_onb') === '1';
 let txType = 'expense', activeTab = 'all', activeFilter = 'all';
-let editTxId = null, editGoalId = null;
+let editTxId = null, editGoalId = null, addToGoalId = null;
+let qaType = 'expense';
 
 // ── Init selectors ──
 function initSel() {
@@ -461,7 +1366,6 @@ function seed(){
   const d=(mo,day)=>`2026-${String(mo).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
   txs=[
     {id:'r1',type:'income',name:'เงินเดือน',amount:20483.16,category:'เงินเดือน',date:d(5,1),due:d(5,1),status:'paid',note:''},
-    {id:'e1',type:'expense',name:'ค่าหุ้นส่วนโลตัส',amount:0,category:'หุ้น/การลงทุน',date:d(5,1),due:d(5,31),status:'unpaid',note:'รอยืนยันจำนวน'},
     {id:'e4',type:'expense',name:'ค่าเน็ตบ้าน AIS',amount:480.70,category:'อินเตอร์เน็ต',date:d(5,1),due:d(5,12),status:'unpaid',note:'รอบที่ 12'},
     {id:'e5',type:'expense',name:'ค่าเน็ต 3BB',amount:631.30,category:'อินเตอร์เน็ต',date:d(5,1),due:d(5,1),status:'unpaid',note:'รอบที่ 1'},
     {id:'e6',type:'expense',name:'ค่าบัตรเดอะวัน',amount:2291.44,category:'หนี้/สินเชื่อ',date:d(5,1),due:d(5,22),status:'paid',note:'รอบที่ 22'},
@@ -469,15 +1373,15 @@ function seed(){
     {id:'e8',type:'expense',name:'ค่าสินเชื่อ LineBK',amount:1100,category:'หนี้/สินเชื่อ',date:d(5,1),due:d(5,5),status:'paid',note:'รอบที่ 5'},
     {id:'e9',type:'expense',name:'Lazada',amount:348.23,category:'ออนไลน์/ช็อปปิ้ง',date:d(5,1),due:d(5,5),status:'paid',note:'รอบที่ 5'},
     {id:'e10',type:'expense',name:'ค่า Spay (Shopee)',amount:1218.30,category:'หนี้/สินเชื่อ',date:d(5,1),due:d(5,10),status:'paid',note:'รอบที่ 10'},
-    {id:'e11',type:'expense',name:'ค่า SEasyCash',amount:10995.08,category:'หนี้/สินเชื่อ',date:d(5,1),due:d(5,5),status:'paid',note:'ยอดพี่ปุ้ม 2,013.78 / ตัวเอง 8,712.74'},
-    {id:'e12',type:'expense',name:'เงินกู้ออมสิน',amount:242,category:'หนี้/สินเชื่อ',date:d(5,1),due:d(5,3),status:'paid',note:'รอบที่ 3'},
-    {id:'e13',type:'expense',name:'True Paynext',amount:666.61,category:'หนี้/สินเชื่อ',date:d(5,1),due:d(5,1),status:'paid',note:'รอบที่ 1'},
-    {id:'e14',type:'expense',name:'True Paynext Extar',amount:6493.83,category:'หนี้/สินเชื่อ',date:d(5,1),due:d(5,1),status:'paid',note:'พี่ปุ้ม 1,230.03 / ตัวเอง 5,263.80'},
-    {id:'e15',type:'expense',name:'บัตร KTC',amount:3449,category:'หนี้/สินเชื่อ',date:d(5,1),due:d(5,2),status:'paid',note:'รอบที่ 2'},
+    {id:'e11',type:'expense',name:'SEasyCash',amount:10995.08,category:'หนี้/สินเชื่อ',date:d(5,1),due:d(5,5),status:'paid',note:''},
+    {id:'e12',type:'expense',name:'เงินกู้ออมสิน',amount:242,category:'หนี้/สินเชื่อ',date:d(5,1),due:d(5,3),status:'paid',note:''},
+    {id:'e13',type:'expense',name:'True Paynext',amount:666.61,category:'หนี้/สินเชื่อ',date:d(5,1),due:d(5,1),status:'paid',note:''},
+    {id:'e14',type:'expense',name:'True Paynext Extra',amount:6493.83,category:'หนี้/สินเชื่อ',date:d(5,1),due:d(5,1),status:'paid',note:''},
+    {id:'e15',type:'expense',name:'บัตร KTC',amount:3449,category:'หนี้/สินเชื่อ',date:d(5,1),due:d(5,2),status:'paid',note:''}
   ];
   goals=[
-    {id:'g1',name:'ประกันสุขภาพ',target:29784,saved:0,due:'2026-10-08',note:'กำหนดชำระ 8 ต.ค. 69',monthly:0},
-    {id:'g2',name:'ประกันรถยนต์',target:13000,saved:0,due:'2026-11-30',note:'กำหนดชำระ พ.ย. 69',monthly:0},
+    {id:'g1',name:'ประกันสุขภาพ',target:29784,saved:0,due:'2026-10-08',note:'กำหนด 8 ต.ค.'},
+    {id:'g2',name:'ประกันรถยนต์',target:13000,saved:0,due:'2026-11-30',note:'กำหนด พ.ย.'}
   ];
   saveAll();
 }
@@ -489,14 +1393,40 @@ function saveAll(){
 
 // ── Helpers ──
 function fmt(n){ return Number(n||0).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function fmtShort(n){ if(Math.abs(n)>=1000000)return(n/1000000).toFixed(1)+'M'; if(Math.abs(n)>=1000)return(n/1000).toFixed(1)+'k'; return Math.round(n); }
 function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function thDate(s){ if(!s)return'—'; const d=new Date(s); return d.getDate()+' '+MONTHS[d.getMonth()].slice(0,3)+' '+(d.getFullYear()+543); }
 function diffDays(s){ const t=new Date();t.setHours(0,0,0,0);const d=new Date(s);d.setHours(0,0,0,0);return Math.round((d-t)/86400000); }
 function sLabel(s){ return {paid:'ชำระแล้ว',unpaid:'ค้างชำระ',pending:'รอดำเนินการ'}[s]||s; }
 
-function monthItems(){
-  const {m,y}=period();
-  return txs.filter(t=>{ const d=new Date(t.date); return d.getMonth()===m&&d.getFullYear()===y; });
+function monthItems(mo, yr){
+  const p = (mo===undefined) ? period() : {m:mo,y:yr};
+  return txs.filter(t=>{ const d=new Date(t.date); return d.getMonth()===p.m&&d.getFullYear()===p.y; });
+}
+
+// ── Theme ──
+function applyTheme(){
+  document.documentElement.setAttribute('data-theme', theme);
+  const tb = document.getElementById('themeBtn');
+  if(tb){
+    tb.innerHTML = theme==='dark'
+      ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>'
+      : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
+  }
+}
+function toggleTheme(){
+  theme = theme==='light' ? 'dark' : 'light';
+  localStorage.setItem('fin_theme', theme);
+  applyTheme();
+  toast(theme==='dark' ? '🌙 โหมดมืด' : '☀️ โหมดสว่าง');
+  renderAll();
+}
+
+// ── Onboarding ──
+function showOnb(){ document.getElementById('onbBackdrop').classList.add('open'); }
+function finishOnb(){
+  localStorage.setItem('fin_onb','1');
+  document.getElementById('onbBackdrop').classList.remove('open');
 }
 
 // ── Render all ──
@@ -506,10 +1436,26 @@ function renderAll(){
   const exp = all.filter(i=>i.type==='expense').reduce((s,i)=>s+i.amount,0);
   const unpaidItems = all.filter(i=>i.status==='unpaid'&&i.type==='expense');
   const debt = unpaidItems.reduce((s,i)=>s+i.amount,0);
+  const bal = inc - exp;
 
+  // Hero
+  document.getElementById('heroBalance').innerHTML = '<span class="sign">฿</span>'+(bal<0?'-':'')+fmt(Math.abs(bal));
+  document.getElementById('heroBalance').style.color = bal<0 ? 'var(--red)' : 'var(--text)';
+  document.getElementById('heroInc').textContent = '฿'+fmt(inc);
+  document.getElementById('heroExp').textContent = '฿'+fmt(exp);
+
+  // Savings rate
+  const sr = inc>0 ? Math.max(0, Math.min(100, (bal/inc)*100)) : 0;
+  const circ = 2*Math.PI*24;
+  document.getElementById('srRingFill').style.strokeDashoffset = circ*(1-sr/100);
+  document.getElementById('srPct').textContent = Math.round(sr)+'%';
+  document.getElementById('srText').textContent = sr>=20 ? 'เยี่ยม! สูงกว่าเป้า 20%' : sr>=10 ? 'พอใช้ ตั้งเป้า 20%' : sr>0 ? 'ต่ำกว่าเป้า 20%' : 'ยังไม่มีออม';
+
+  // Cards
   document.getElementById('sIncome').textContent  = '฿'+fmt(inc);
   document.getElementById('sExpense').textContent = '฿'+fmt(exp);
-  document.getElementById('sBalance').textContent = (inc-exp<0?'-':'')+'฿'+fmt(Math.abs(inc-exp));
+  document.getElementById('sBalance').textContent = (bal<0?'-':'')+'฿'+fmt(Math.abs(bal));
+  document.getElementById('sBalance').style.color = bal<0 ? 'var(--red)' : 'var(--text)';
   document.getElementById('sDebt').textContent     = '฿'+fmt(debt);
   document.getElementById('sIncomeN').textContent  = all.filter(i=>i.type==='income').length+' รายการ';
   document.getElementById('sExpenseN').textContent = all.filter(i=>i.type==='expense').length+' รายการ';
@@ -528,23 +1474,562 @@ function renderAll(){
   // Alert
   const overdue = unpaidItems.filter(i=>i.due&&diffDays(i.due)<0);
   const ab = document.getElementById('alertBox');
-  if(overdue.length){ ab.style.display=''; ab.textContent='⚠️ เกินกำหนดชำระ '+overdue.length+' รายการ: '+overdue.map(i=>i.name).join(', '); }
-  else ab.style.display='none';
+  if(overdue.length){
+    ab.style.display='';
+    ab.innerHTML='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> เกินกำหนดชำระ '+overdue.length+' รายการ: '+overdue.map(i=>i.name).join(', ');
+  } else ab.style.display='none';
 
+  renderInsights(inc, exp, all);
+  renderBars();
+  renderDonut(all);
+  renderTemplates();
   renderGoals();
   renderTx();
+}
+
+// ── Insights (smart) ──
+function renderInsights(inc, exp, all){
+  const box = document.getElementById('insightsBox');
+  const items = [];
+  const bal = inc - exp;
+  const {m,y} = period();
+
+  // Last month compare
+  const lastM = m===0?11:m-1, lastY = m===0?y-1:y;
+  const lastAll = monthItems(lastM, lastY);
+  const lastExp = lastAll.filter(i=>i.type==='expense').reduce((s,i)=>s+i.amount,0);
+
+  // Insight 1: Expense vs last month
+  if(lastExp>0 && exp>0){
+    const diff = exp - lastExp;
+    const pct = Math.round(Math.abs(diff)/lastExp*100);
+    if(diff > 0 && pct >= 10){
+      items.push({type:'warn',icon:'📈',title:`รายจ่ายเพิ่มขึ้น ${pct}%`,text:`สูงกว่าเดือนที่แล้ว ฿${fmt(diff)} — ลองดูว่าหมวดไหนเพิ่มเยอะที่สุด`});
+    } else if(diff < 0 && pct >= 10){
+      items.push({type:'good',icon:'📉',title:`รายจ่ายลดลง ${pct}%`,text:`ประหยัดได้กว่าเดือนที่แล้ว ฿${fmt(Math.abs(diff))} — ทำได้ดีมาก!`});
+    }
+  }
+
+  // Insight 2: Top category
+  const byCat = {};
+  all.filter(i=>i.type==='expense'&&i.amount>0).forEach(i=>{
+    byCat[i.category] = (byCat[i.category]||0) + i.amount;
+  });
+  const sorted = Object.entries(byCat).sort((a,b)=>b[1]-a[1]);
+  if(sorted.length && exp>0){
+    const [topCat, topAmt] = sorted[0];
+    const topPct = Math.round(topAmt/exp*100);
+    if(topPct >= 40){
+      items.push({type:'info',icon:CAT_EMOJI[topCat]||'📊',title:`${topCat} กิน ${topPct}% ของรายจ่าย`,text:`฿${fmt(topAmt)} จากทั้งหมด ฿${fmt(exp)} — เป็นหมวดที่ใช้จ่ายมากสุด`});
+    }
+  }
+
+  // Insight 3: Savings rate
+  if(inc > 0){
+    const sr = (bal/inc)*100;
+    if(sr >= 20){
+      items.push({type:'good',icon:'🎯',title:`ออมได้ ${Math.round(sr)}% ของรายได้`,text:`เกินเกณฑ์มาตรฐาน 20% — สุดยอด! แนะนำเอาส่วนเกินไปลงทุน`});
+    } else if(sr <= 0){
+      items.push({type:'warn',icon:'⚠️',title:'รายจ่ายมากกว่ารายได้',text:`ติดลบ ฿${fmt(Math.abs(bal))} — ต้องลดรายจ่ายหรือหาทางเพิ่มรายได้`});
+    } else if(sr < 10){
+      items.push({type:'warn',icon:'💡',title:`ออมได้แค่ ${Math.round(sr)}%`,text:'แนะนำตั้งเป้าออมอย่างน้อย 20% ของรายได้ — ลองตัดรายจ่ายไม่จำเป็นดู'});
+    }
+  }
+
+  // Insight 4: Upcoming dues
+  const upcoming = all.filter(i=>i.status==='unpaid'&&i.due&&diffDays(i.due)>=0&&diffDays(i.due)<=7);
+  if(upcoming.length){
+    const sum = upcoming.reduce((s,i)=>s+i.amount,0);
+    items.push({type:'info',icon:'⏰',title:`มี ${upcoming.length} รายการครบกำหนดใน 7 วัน`,text:`รวม ฿${fmt(sum)} — อย่าลืมเตรียมเงินไว้`});
+  }
+
+  // Insight 5: Debt ratio
+  if(inc > 0){
+    const debtCat = all.filter(i=>i.type==='expense'&&i.category==='หนี้/สินเชื่อ').reduce((s,i)=>s+i.amount,0);
+    const dr = (debtCat/inc)*100;
+    if(dr >= 50){
+      items.push({type:'warn',icon:'💳',title:`หนี้กิน ${Math.round(dr)}% ของรายได้`,text:'อยู่ในเกณฑ์อันตราย — ควรเร่งจัดการ refinance หรือ consolidate หนี้'});
+    } else if(dr >= 35 && dr < 50){
+      items.push({type:'info',icon:'⚖️',title:`หนี้ ${Math.round(dr)}% ของรายได้`,text:'ใกล้เกณฑ์เสี่ยง (35-50%) — เริ่มวางแผนปลดหนี้'});
+    }
+  }
+
+  if(!items.length){
+    items.push({type:'info',icon:'✨',title:'เริ่มบันทึกรายการ',text:'เพิ่มรายรับ-รายจ่ายเพื่อดู insight อัจฉริยะที่นี่'});
+  }
+
+  box.innerHTML = items.slice(0,4).map(i=>`
+    <div class="insight ${i.type}">
+      <div class="insight-icon">${i.icon}</div>
+      <div class="insight-body">
+        <div class="insight-title">${esc(i.title)}</div>
+        <div class="insight-text">${esc(i.text)}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ── Bars (6 months) ──
+function renderBars(){
+  const {m,y} = period();
+  const data = [];
+  for(let i=5;i>=0;i--){
+    const dm = (m-i+12)%12;
+    const dy = m-i<0 ? y-1 : y;
+    const items = monthItems(dm, dy);
+    const inc = items.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
+    const exp = items.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0);
+    data.push({m:dm,y:dy,inc,exp,current:i===0});
+  }
+  const max = Math.max.apply(null, [1].concat(data.map(d=>Math.max(d.inc,d.exp))));
+  document.getElementById('barsBox').innerHTML = data.map(d=>{
+    const incH = (d.inc/max)*100;
+    const expH = (d.exp/max)*100;
+    return `<div class="bar-col ${d.current?'current':''}">
+      <div class="bar-stack">
+        <div class="bar-seg inc" style="height:${incH}%" title="รายรับ ฿${fmt(d.inc)}"></div>
+        <div class="bar-seg exp" style="height:${expH}%" title="รายจ่าย ฿${fmt(d.exp)}"></div>
+      </div>
+      <div class="bar-label">${MONTHS_SHORT[d.m]}</div>
+    </div>`;
+  }).join('');
+}
+
+// ── Donut (categories) ──
+function renderDonut(all){
+  const byCat = {};
+  all.filter(i=>i.type==='expense'&&i.amount>0).forEach(i=>{
+    byCat[i.category] = (byCat[i.category]||0) + i.amount;
+  });
+  const sorted = Object.entries(byCat).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  const total = sorted.reduce((s,[,v])=>s+v,0);
+  const wrap = document.getElementById('donutWrap');
+  if(!total){
+    wrap.innerHTML = '<div style="color:var(--text3);font-size:13px;text-align:center;padding:30px 0;width:100%">ยังไม่มีรายจ่าย</div>';
+    return;
+  }
+  const C = 2*Math.PI*40;
+  let offset = 0;
+  const arcs = sorted.map(([cat,v],i)=>{
+    const pct = v/total;
+    const len = C*pct;
+    const arc = `<circle cx="65" cy="65" r="40" fill="none" stroke="${CAT_COLORS[i%CAT_COLORS.length]}" stroke-width="18" stroke-dasharray="${len} ${C}" stroke-dashoffset="${-offset}"/>`;
+    offset += len;
+    return arc;
+  }).join('');
+  const legend = sorted.map(([cat,v],i)=>`
+    <div class="donut-leg-item">
+      <span class="donut-leg-dot" style="background:${CAT_COLORS[i%CAT_COLORS.length]}"></span>
+      <span class="donut-leg-name">${CAT_EMOJI[cat]||''} ${esc(cat)}</span>
+      <span class="donut-leg-amt">฿${fmt(v)}</span>
+    </div>
+  `).join('');
+  wrap.innerHTML = `
+    <div class="donut">
+      <svg width="130" height="130">${arcs}</svg>
+      <div class="donut-center">
+        <div class="donut-center-num">฿${fmtShort(total)}</div>
+        <div class="donut-center-lbl">รวม</div>
+      </div>
+    </div>
+    <div class="donut-legend">${legend}</div>
+  `;
+}
+
+// ── Smart Shortcut Pad (one-tap save) — Fully Customizable ──
+const EMOJI_LIB = {
+  'อาหาร': ['☕','🍜','🍕','🍣','🥗','🍔','🍱','🧋','🍰','🥪','🥡','🍢','🥟','🍙','🍳','🍩','🍞','🥐','🍪','🍫','🍿','🥤','🍵','🥧','🍦','🍨','🥘','🍲','🍝','🌮','🌯','🥙','🧆','🥚','🥓','🍗','🍖','🥩','🦐','🦀','🐟','🍤'],
+  'เดินทาง': ['🚗','🛵','⛽','🚕','🚖','🚌','🚎','🚐','🚛','🚓','🚑','🚒','🏍️','🚲','✈️','🚁','🚀','🛸','🚢','⛵','🛶','🚤','🛳️','🚊','🚝','🚞','🚂','🚆','🚉','🛴','🛹','🎫','🅿️','🚦','🗺️','🧭'],
+  'ช้อปปิ้ง': ['🛒','🛍️','👕','👔','👗','👖','👚','👘','🥻','👙','🩱','🩳','🧥','🧤','🧦','👠','👟','🥾','👞','👜','💄','💅','👓','🕶️','💍','👑','⌚','📱','💻','⌨️','🖥️','🖨️','📷','🎧','🎮','🎁','📦','🛏️','🛋️','🪑'],
+  'ใช้จ่าย': ['💡','💧','🔥','📶','📺','📻','🏠','🏡','🔑','🚪','🪟','🛁','🚿','🚽','🧻','🧼','🧴','🧹','🧽','🧺','🧯','🛡️','💊','🏥','🩺','💉','🦷','👁️','🩹','🧬','🔬','🧪'],
+  'การเงิน': ['💰','💵','💴','💶','💷','💸','💳','💎','🪙','💲','🏦','📈','📉','📊','📋','💼','🧾','📑','✉️','📧','💌','📤','📥'],
+  'ทั่วไป': ['❤️','💛','💚','💙','💜','🖤','🤍','🧡','💖','💕','💔','✨','⭐','🌟','💫','🔥','💥','🎉','🎊','🎈','🎂','🎁','🏆','🥇','🥈','🥉','🎯','🎪','🎢','🎡','🎠','🎨','🎭','🎤','🎬','📚','✏️','📝','🔧','🛠️','⚙️','🔨','🪛','🔩','📌','📍','🌹','🌸','🌺','🌻','🌼','🌷','🌱','🌳','🐾','🐶','🐱','🐰','🦊']
+};
+const EMOJI_KEYWORDS = {
+  '☕':'กาแฟ coffee','🍜':'ข้าว อาหาร noodle','🍕':'pizza','🧋':'ชานม bubble tea','⛽':'น้ำมัน gas fuel oil',
+  '🚗':'รถ car','🛒':'ซื้อของ shop','💼':'งาน เงินเดือน work salary job','💰':'เงิน money cash',
+  '🏠':'บ้าน home','💡':'ไฟ ค่าไฟ electric','💧':'น้ำ water','📶':'เน็ต wifi internet',
+  '💳':'บัตร card credit','🍣':'sushi ซูชิ','🍔':'burger เบอร์เกอร์','🍱':'bento กล่องข้าว',
+  '✈️':'เที่ยว travel flight','🎬':'หนัง movie cinema','🎮':'เกม game','📚':'หนังสือ book',
+  '👕':'เสื้อ clothes shirt','💊':'ยา medicine pharmacy','🏥':'หมอ โรงพยาบาล hospital',
+  '🐾':'สัตว์ pet','🥬':'ผัก veggie','🥩':'เนื้อ meat'
+};
+
+const COLOR_PALETTE = [
+  null, // 'default' (no custom color)
+  '#9b4a3a','#c25c4a','#d97757','#e5a05c','#d4a843','#a8a432',
+  '#7d8a3a','#5c7d52','#3d6b38','#4a8a52','#3a9b7a','#3a8a8a',
+  '#3a6e9b','#4a5fa8','#6b4a9b','#9b4a8a','#a85c8a','#6b6560',
+  '#2c2a27','#1a1a1a','#e8d4a0','#f5d6c0','#c0d8a0','#a0c8d8'
+];
+
+const DEFAULT_SHORTCUTS = [
+  {emoji:'☕', name:'กาแฟ', amount:60, type:'expense', category:'อาหาร', color:'#9b4a3a'},
+  {emoji:'🍜', name:'ข้าวเที่ยง', amount:80, type:'expense', category:'อาหาร', color:'#e5a05c'},
+  {emoji:'⛽', name:'น้ำมัน', amount:300, type:'expense', category:'เดินทาง', color:'#3a6e9b'},
+  {emoji:'🛒', name:'ของใช้', amount:200, type:'expense', category:'ออนไลน์/ช็อปปิ้ง', color:'#6b4a9b'},
+  {emoji:'🧋', name:'ชานม', amount:55, type:'expense', category:'อาหาร', color:'#d4a843'},
+  {emoji:'💼', name:'เงินเดือน', amount:0, type:'income', category:'เงินเดือน', color:'#3d6b38'}
+];
+
+let shortcuts = JSON.parse(localStorage.getItem('fin_shortcuts')||'null') || DEFAULT_SHORTCUTS.slice();
+let editingShortcutIdx = null;
+let editMode = false;
+let currentEmojiCat = 'อาหาร';
+let scSelectedEmoji = '💸';
+let scSelectedColor = null;
+let dragSourceIdx = null;
+
+function saveShortcuts(){
+  localStorage.setItem('fin_shortcuts', JSON.stringify(shortcuts));
+}
+
+function renderTemplates(){
+  const grid = document.getElementById('shortcutGrid');
+  if(!grid) return;
+  grid.classList.toggle('edit-mode', editMode);
+  let html = '';
+  shortcuts.forEach((s, i)=>{
+    if(!s){
+      html += '<button class="shortcut-btn empty" onclick="editShortcut('+i+')" title="เพิ่มปุ่มลัด">'+
+        '<span class="shortcut-emoji" style="opacity:0.4">+</span>'+
+        '<span class="shortcut-name" style="color:var(--text3)">เพิ่ม</span>'+
+        '<span class="shortcut-amt"> </span>'+
+        '</button>';
+      return;
+    }
+    const sign = s.type==='income'?'+':'';
+    const amtTxt = s.amount>0 ? sign+'฿'+fmtShort(s.amount) : 'แตะแก้ไข';
+    const customStyle = s.color ? 'background:'+s.color+';' : '';
+    const customAttr = s.color ? 'data-customcolor="1"' : '';
+    const onclickAttr = editMode ? '' : 'onclick="useShortcut('+i+')"';
+    const draggableAttr = editMode ? 'draggable="true" ondragstart="onDragStart(event,'+i+')" ondragover="onDragOver(event,'+i+')" ondragleave="onDragLeave(event)" ondrop="onDrop(event,'+i+')" ondragend="onDragEnd(event)"' : '';
+    html += '<button class="shortcut-btn '+s.type+'" '+customAttr+' style="'+customStyle+'" '+onclickAttr+' oncontextmenu="editShortcut('+i+',event)" '+draggableAttr+' title="แตะ=บันทึก · คลิกขวา=แก้ไข">'+
+      '<span class="shortcut-remove-btn" onclick="removeShortcut(event,'+i+')">×</span>'+
+      '<span class="shortcut-edit-icon" onclick="editShortcut('+i+',event)">✎</span>'+
+      '<span class="shortcut-emoji">'+esc(s.emoji||'📋')+'</span>'+
+      '<span class="shortcut-name">'+esc(s.name)+'</span>'+
+      '<span class="shortcut-amt">'+amtTxt+'</span>'+
+      '<span class="shortcut-flash" id="flash'+i+'"></span>'+
+      '</button>';
+  });
+  grid.innerHTML = html;
+  document.getElementById('shortcutCount').textContent = shortcuts.filter(s=>s).length+' ปุ่ม';
+}
+
+function addShortcut(){
+  // find first null slot, or append
+  let idx = shortcuts.indexOf(null);
+  if(idx === -1){
+    shortcuts.push(null);
+    idx = shortcuts.length - 1;
+  }
+  editShortcut(idx);
+}
+
+function removeShortcut(e, idx){
+  e.stopPropagation();
+  if(!confirm('ลบปุ่มลัด "'+(shortcuts[idx]&&shortcuts[idx].name||'')+'"?')) return;
+  shortcuts.splice(idx, 1);
+  saveShortcuts();
+  renderTemplates();
+  toast('ลบปุ่มลัดแล้ว');
+}
+
+function toggleEditMode(){
+  editMode = !editMode;
+  document.getElementById('editModeBtn').classList.toggle('active', editMode);
+  document.getElementById('editModeBtn').innerHTML = editMode
+    ? '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> เสร็จสิ้น'
+    : '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> จัดเรียง / ลบ';
+  document.getElementById('qaTopHint').textContent = editMode ? '✏️ โหมดแก้ไข — ลากเพื่อจัดเรียง, กด × เพื่อลบ' : 'กดปุ่มลัด หรือพิมพ์ Enter เพื่อบันทึก';
+  renderTemplates();
+}
+
+// Drag and drop
+function onDragStart(e, idx){
+  dragSourceIdx = idx;
+  e.dataTransfer.effectAllowed = 'move';
+  e.currentTarget.classList.add('dragging');
+}
+function onDragOver(e, idx){
+  e.preventDefault();
+  if(dragSourceIdx !== idx) e.currentTarget.classList.add('drag-over');
+}
+function onDragLeave(e){
+  e.currentTarget.classList.remove('drag-over');
+}
+function onDrop(e, idx){
+  e.preventDefault();
+  e.currentTarget.classList.remove('drag-over');
+  if(dragSourceIdx === null || dragSourceIdx === idx) return;
+  const moved = shortcuts.splice(dragSourceIdx, 1)[0];
+  shortcuts.splice(idx, 0, moved);
+  saveShortcuts();
+  renderTemplates();
+}
+function onDragEnd(e){
+  e.currentTarget.classList.remove('dragging');
+  document.querySelectorAll('.shortcut-btn').forEach(b=>b.classList.remove('drag-over'));
+  dragSourceIdx = null;
+}
+
+function useShortcut(idx){
+  if(editMode) return;
+  const s = shortcuts[idx];
+  if(!s) return;
+  if(s.amount<=0){
+    editShortcut(idx);
+    return;
+  }
+  const today = new Date().toISOString().slice(0,10);
+  txs.push({
+    id:'t'+Date.now(),
+    type: s.type, name: s.name, amount: s.amount,
+    category: s.category, date: today, due: today,
+    status: 'paid', note: ''
+  });
+  saveAll();
+  const flash = document.getElementById('flash'+idx);
+  if(flash){ flash.classList.remove('flash'); void flash.offsetWidth; flash.classList.add('flash'); }
+  renderAll();
+  const sign = s.type==='income'?'+':'';
+  toast('✓ '+(s.emoji||'')+' '+s.name+' '+sign+'฿'+fmt(s.amount));
+}
+
+// ── Designer ──
+function editShortcut(idx, e){
+  if(e){ e.preventDefault(); e.stopPropagation(); }
+  editingShortcutIdx = idx;
+  const s = shortcuts[idx];
+  document.getElementById('shortcutModalTitle').textContent = s ? 'แก้ไขปุ่มลัด' : 'สร้างปุ่มลัด';
+
+  // Init values
+  scSetType(s ? s.type : 'expense');
+  scSelectedEmoji = s ? s.emoji : (s && s.type==='income' ? '💰' : '💸');
+  scSelectedColor = s ? (s.color || null) : null;
+  document.getElementById('scName').value = s ? s.name : '';
+  document.getElementById('scAmt').value = s && s.amount>0 ? s.amount : '';
+  document.getElementById('scCat').value = s ? s.category : 'อาหาร';
+  document.getElementById('scEmojiCustom').value = '';
+  document.getElementById('scEmojiSearch').value = '';
+  document.getElementById('scDelBtn').style.display = s ? '' : 'none';
+
+  // Render emoji categories
+  const cats = Object.keys(EMOJI_LIB);
+  document.getElementById('scEmojiCats').innerHTML = cats.map(c=>
+    '<span class="emoji-cat'+(c===currentEmojiCat?' on':'')+'" onclick="setEmojiCat(\''+c+'\')">'+c+'</span>'
+  ).join('');
+  renderEmojiGrid();
+
+  // Render color picker
+  renderColorPicker();
+
+  updatePreview();
+  document.getElementById('shortcutBackdrop').classList.add('open');
+  setTimeout(()=>document.getElementById('scName').focus(),100);
+}
+
+function setEmojiCat(cat){
+  currentEmojiCat = cat;
+  document.querySelectorAll('.emoji-cat').forEach(el=>el.classList.toggle('on', el.textContent===cat));
+  document.getElementById('scEmojiSearch').value = '';
+  renderEmojiGrid();
+}
+
+function renderEmojiGrid(){
+  const search = document.getElementById('scEmojiSearch').value.toLowerCase().trim();
+  let list = [];
+  if(search){
+    // Search across all categories + keywords
+    const all = [];
+    Object.values(EMOJI_LIB).forEach(arr=>arr.forEach(e=>{ if(all.indexOf(e)===-1) all.push(e); }));
+    list = all.filter(em=>{
+      const kw = (EMOJI_KEYWORDS[em]||'').toLowerCase();
+      return kw.indexOf(search) !== -1;
+    });
+    if(!list.length) list = all.slice(0, 40);
+  } else {
+    list = EMOJI_LIB[currentEmojiCat] || [];
+  }
+  document.getElementById('scEmojiGrid').innerHTML = list.map(em=>
+    '<button class="emoji-cell'+(em===scSelectedEmoji?' selected':'')+'" onclick="selectEmoji(\''+em+'\')">'+em+'</button>'
+  ).join('');
+}
+
+function filterEmojis(){
+  renderEmojiGrid();
+}
+
+function selectEmoji(em){
+  scSelectedEmoji = em;
+  document.getElementById('scEmojiCustom').value = '';
+  document.getElementById('scEmojiSelected').textContent = em;
+  document.querySelectorAll('.emoji-cell').forEach(el=>el.classList.toggle('selected', el.textContent===em));
+  updatePreview();
+}
+
+function setCustomEmoji(){
+  const v = document.getElementById('scEmojiCustom').value.trim();
+  if(v){
+    scSelectedEmoji = v;
+    document.getElementById('scEmojiSelected').textContent = v;
+    document.querySelectorAll('.emoji-cell').forEach(el=>el.classList.remove('selected'));
+    updatePreview();
+  }
+}
+
+function renderColorPicker(){
+  const wrap = document.getElementById('scColorPicker');
+  wrap.innerHTML = COLOR_PALETTE.map((c)=>{
+    if(c===null){
+      return '<div class="color-swatch default'+(scSelectedColor===null?' selected':'')+'" onclick="selectColor(null)" title="ค่าเริ่มต้น">⌀</div>';
+    }
+    return '<div class="color-swatch'+(scSelectedColor===c?' selected':'')+'" style="background:'+c+'" onclick="selectColor(\''+c+'\')" title="'+c+'"></div>';
+  }).join('');
+}
+
+function selectColor(c){
+  scSelectedColor = c;
+  renderColorPicker();
+  updatePreview();
+}
+
+function updatePreview(){
+  const name = document.getElementById('scName').value.trim() || 'ชื่อปุ่ม';
+  const amt = parseFloat(document.getElementById('scAmt').value)||0;
+  const type = getScType();
+  const sign = type==='income'?'+':'';
+  const amtTxt = amt>0 ? sign+'฿'+fmtShort(amt) : '฿0';
+
+  const pv = document.getElementById('scPreview');
+  document.getElementById('pvEmoji').textContent = scSelectedEmoji || (type==='income'?'💰':'💸');
+  document.getElementById('pvName').textContent = name;
+  document.getElementById('pvAmt').textContent = amtTxt;
+
+  if(scSelectedColor){
+    pv.style.background = scSelectedColor;
+    pv.style.borderColor = 'transparent';
+    document.getElementById('pvName').style.color = '#fff';
+    document.getElementById('pvAmt').style.color = 'rgba(255,255,255,0.85)';
+    pv.style.borderLeft = 'none';
+  } else {
+    pv.style.background = 'var(--surface)';
+    pv.style.borderColor = 'var(--border)';
+    document.getElementById('pvName').style.color = '';
+    document.getElementById('pvAmt').style.color = type==='income' ? 'var(--green)' : 'var(--text3)';
+    pv.style.borderLeft = '3px solid '+(type==='income'?'var(--green)':'var(--red)');
+  }
+}
+
+function scSetType(t){
+  document.getElementById('scBtnExp').classList.toggle('on', t==='expense');
+  document.getElementById('scBtnInc').classList.toggle('on', t==='income');
+  updatePreview();
+}
+
+function getScType(){
+  return document.getElementById('scBtnInc').classList.contains('on') ? 'income' : 'expense';
+}
+
+function saveShortcut(){
+  const name = document.getElementById('scName').value.trim();
+  const amt = parseFloat(document.getElementById('scAmt').value)||0;
+  const cat = document.getElementById('scCat').value;
+  const type = getScType();
+  const emoji = scSelectedEmoji || (type==='income'?'💰':'💸');
+  const color = scSelectedColor;
+  if(!name){ toast('⚠️ กรอกชื่อปุ่มลัด'); return; }
+  shortcuts[editingShortcutIdx] = {emoji, name, amount: amt, type, category: cat, color};
+  saveShortcuts();
+  closeShortcutModal();
+  renderTemplates();
+  toast('✓ บันทึกปุ่มลัดแล้ว');
+}
+
+function deleteShortcut(){
+  if(!confirm('ลบปุ่มลัดนี้?')) return;
+  shortcuts.splice(editingShortcutIdx, 1);
+  saveShortcuts();
+  closeShortcutModal();
+  renderTemplates();
+  toast('ลบปุ่มลัดแล้ว');
+}
+
+function closeShortcutModal(){ document.getElementById('shortcutBackdrop').classList.remove('open'); }
+function closeShortcutIfBg(e){ if(e.target===e.currentTarget)closeShortcutModal(); }
+
+function useTemplate(name, amount, type, category){
+  const today = new Date().toISOString().slice(0,10);
+  txs.push({
+    id:'t'+Date.now(),
+    type: type, name: name, amount: amount, category: category,
+    date: today,
+    due: today,
+    status: 'paid',
+    note: ''
+  });
+  saveAll(); renderAll();
+  toast('✓ บันทึก '+name+' แล้ว');
+}
+
+// ── Quick Add ──
+function qaSetType(t){
+  qaType = t;
+  document.getElementById('qaTypeExp').classList.toggle('on', t==='expense');
+  document.getElementById('qaTypeInc').classList.toggle('on', t==='income');
+}
+function qaKey(e){
+  if(e.key==='Enter') qaSubmit();
+}
+function qaSubmit(){
+  const name = document.getElementById('qaName').value.trim();
+  const amt = parseFloat(document.getElementById('qaAmt').value)||0;
+  if(!name || amt<=0){
+    toast('⚠️ กรอกชื่อและจำนวน');
+    document.getElementById('qaName').focus();
+    return;
+  }
+  // smart category guess
+  const map = {
+    'กาแฟ':'อาหาร','ข้าว':'อาหาร','อาหาร':'อาหาร','ก๋วยเตี๋ยว':'อาหาร','ของกิน':'อาหาร',
+    'เน็ต':'อินเตอร์เน็ต','บัตร':'หนี้/สินเชื่อ','ผ่อน':'หนี้/สินเชื่อ','สินเชื่อ':'หนี้/สินเชื่อ',
+    'ค่าน้ำ':'สาธารณูปโภค','ค่าไฟ':'สาธารณูปโภค','ค่าไฟฟ้า':'สาธารณูปโภค',
+    'น้ำมัน':'เดินทาง','รถ':'เดินทาง','BTS':'เดินทาง','MRT':'เดินทาง','Grab':'เดินทาง',
+    'เงินเดือน':'เงินเดือน','โบนัส':'เงินเดือน',
+    'shopee':'ออนไลน์/ช็อปปิ้ง','lazada':'ออนไลน์/ช็อปปิ้ง','ออนไลน์':'ออนไลน์/ช็อปปิ้ง',
+    'ประกัน':'ประกัน','ออม':'ออมทรัพย์','หุ้น':'หุ้น/การลงทุน','กองทุน':'หุ้น/การลงทุน'
+  };
+  let cat = qaType==='income' ? 'รายได้อื่น' : 'อื่นๆ';
+  const lower = name.toLowerCase();
+  for(const k in map){ if(lower.includes(k.toLowerCase())){ cat = map[k]; break; } }
+  const today = new Date().toISOString().slice(0,10);
+  txs.push({
+    id:'t'+Date.now(),
+    type: qaType, name, amount: amt, category: cat,
+    date: today, due: today,
+    status: 'paid', note: ''
+  });
+  saveAll();
+  document.getElementById('qaName').value = '';
+  document.getElementById('qaAmt').value = '';
+  document.getElementById('qaName').focus();
+  renderAll();
+  toast('✓ บันทึก '+name+' ฿'+fmt(amt));
 }
 
 // ── Goals ──
 function renderGoals(){
   const grid = document.getElementById('goalsGrid');
+  document.getElementById('goalsCount').textContent = goals.length ? goals.length+' เป้าหมาย' : '';
   if(!goals.length){ grid.innerHTML=''; return; }
   grid.innerHTML = goals.map(g=>{
     const pct = g.target>0 ? Math.min(100, Math.round(g.saved/g.target*100)) : 0;
     const remain = g.target - g.saved;
     const cls = pct>=100?'done':pct>=60?'warn':'safe';
+    const cardCls = pct>=100?'done':pct>=60?'warn':'';
     const monthly = calcMonthly(g);
-    return `<div class="goal-card">
+    return `<div class="goal-card ${cardCls}">
       <div class="goal-header">
         <div>
           <div class="goal-name">${esc(g.name)}</div>
@@ -570,7 +2055,10 @@ function renderGoals(){
         <span>${pct}% ของเป้าหมาย</span>
         <span class="goal-remain ${cls==='done'?'done':''}">${pct>=100?'✅ ครบแล้ว':'เหลืออีก ฿'+fmt(remain)}</span>
       </div>
-      ${monthly>0?`<div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border);font-size:11px;color:var(--text3);display:flex;justify-content:space-between"><span>ควรออมต่อเดือน</span><span class="mono" style="color:var(--amber)">฿${fmt(monthly)}</span></div>`:''}
+      ${monthly>0?`<div class="goal-monthly">
+        <span>ควรออมต่อเดือน · <span class="goal-monthly-amt">฿${fmt(monthly)}</span></span>
+        <button class="goal-quick-add" onclick="openAddToGoal('${g.id}')">+ เพิ่ม</button>
+      </div>`:pct<100?`<div class="goal-monthly"><span>—</span><button class="goal-quick-add" onclick="openAddToGoal('${g.id}')">+ เพิ่ม</button></div>`:''}
     </div>`;
   }).join('');
 }
@@ -584,9 +2072,19 @@ function calcMonthly(g){
   return remain>0 ? Math.ceil(remain/months) : 0;
 }
 
+function usePreset(key){
+  const p = PRESETS[key];
+  if(!p) return;
+  openGoalModal();
+  document.getElementById('gName').value = p.name;
+  document.getElementById('gTarget').value = p.target;
+  document.getElementById('gNote').value = p.note;
+  updateGoalPreview();
+}
+
 function openGoalModal(id){
   editGoalId = id||null;
-  document.getElementById('goalModalTitle').textContent = id?'แก้ไขเป้าหมาย':'เพิ่มเป้าหมายการออม';
+  document.getElementById('goalModalTitle').textContent = id?'แก้ไขเป้าหมาย':'เพิ่มเป้าหมาย';
   if(id){
     const g=goals.find(x=>x.id===id);
     document.getElementById('gName').value=g.name;
@@ -599,6 +2097,7 @@ function openGoalModal(id){
   }
   updateGoalPreview();
   document.getElementById('goalBackdrop').classList.add('open');
+  setTimeout(()=>document.getElementById('gName').focus(),100);
 }
 
 function updateGoalPreview(){
@@ -607,7 +2106,6 @@ function updateGoalPreview(){
   const pct=t>0?Math.min(100,Math.round(s/t*100)):0;
   document.getElementById('gPreviewBar').style.width=pct+'%';
   document.getElementById('gPreviewTxt').textContent='ออมแล้ว '+pct+'% (฿'+fmt(s)+' จาก ฿'+fmt(t)+')';
-  // monthly estimate
   const due=document.getElementById('gDue').value;
   let mly='';
   if(due&&t>s){
@@ -627,14 +2125,40 @@ function saveGoal(){
   const note=document.getElementById('gNote').value.trim();
   if(!name){ toast('⚠️ กรุณากรอกชื่อเป้าหมาย'); return; }
   const obj={name,target,saved,due,note};
-  if(editGoalId){ const i=goals.findIndex(x=>x.id===editGoalId); goals[i]={...goals[i],...obj}; toast('✓ แก้ไขเป้าหมายแล้ว'); }
-  else { goals.push({...obj,id:'g'+Date.now()}); toast('✓ เพิ่มเป้าหมายแล้ว'); }
+  if(editGoalId){
+    const i=goals.findIndex(x=>x.id===editGoalId);
+    goals[i]=Object.assign({}, goals[i], obj);
+    toast('✓ แก้ไขเป้าหมายแล้ว');
+  } else {
+    goals.push(Object.assign({}, obj, {id:'g'+Date.now()}));
+    toast('✓ เพิ่มเป้าหมายแล้ว');
+  }
   saveAll(); closeGoalModal(); renderAll();
 }
 
 function deleteGoal(id){ if(!confirm('ลบเป้าหมายนี้?'))return; goals=goals.filter(g=>g.id!==id); saveAll(); renderAll(); toast('ลบเป้าหมายแล้ว'); }
 function closeGoalModal(){ document.getElementById('goalBackdrop').classList.remove('open'); }
 function closeGoalIfBg(e){ if(e.target===e.currentTarget)closeGoalModal(); }
+
+// Add to goal
+function openAddToGoal(id){
+  addToGoalId = id;
+  const g = goals.find(x=>x.id===id);
+  document.getElementById('atgName').textContent = g.name;
+  document.getElementById('atgAmt').value = '';
+  document.getElementById('addToGoalBackdrop').classList.add('open');
+  setTimeout(()=>document.getElementById('atgAmt').focus(),100);
+}
+function closeAddToGoal(){ document.getElementById('addToGoalBackdrop').classList.remove('open'); }
+function closeAddToGoalIfBg(e){ if(e.target===e.currentTarget)closeAddToGoal(); }
+function doAddToGoal(){
+  const amt = parseFloat(document.getElementById('atgAmt').value)||0;
+  if(amt<=0){ toast('⚠️ กรอกจำนวน'); return; }
+  const g = goals.find(x=>x.id===addToGoalId);
+  g.saved += amt;
+  saveAll(); closeAddToGoal(); renderAll();
+  toast('✓ เพิ่ม ฿'+fmt(amt)+' ใน '+g.name);
+}
 
 // ── Transactions ──
 function getFiltered(){
@@ -650,9 +2174,24 @@ function renderTx(){
   const list=getFiltered();
   const tbody=document.getElementById('txBody');
   const empty=document.getElementById('txEmpty');
-  if(!list.length){ tbody.innerHTML=''; empty.style.display=''; return; }
+  if(!list.length){
+    tbody.innerHTML='';
+    const hasOtherData = txs.some(t=>{
+      const d=new Date(t.date);
+      const {m,y}=period();
+      return !(d.getMonth()===m && d.getFullYear()===y);
+    });
+    if(hasOtherData && activeFilter==='all' && activeTab==='all'){
+      empty.innerHTML = '<div style="margin-bottom:14px">ไม่มีรายการในเดือนนี้</div>'
+        + '<button class="btn-add" style="margin:0 auto" onclick="openCopyModal()">⎘ คัดลอกจากเดือนก่อน</button>';
+    } else {
+      empty.innerHTML = 'ยังไม่มีรายการ — เริ่มบันทึกด้วยช่อง quick add ด้านบน';
+    }
+    empty.style.display='';
+    return;
+  }
   empty.style.display='none';
-  const sorted=[...list].sort((a,b)=>{
+  const sorted=list.slice().sort((a,b)=>{
     const o={unpaid:0,pending:1,paid:2};
     if(o[a.status]!==o[b.status])return o[a.status]-o[b.status];
     return(a.due||'9')>(b.due||'9')?1:-1;
@@ -674,17 +2213,18 @@ function rowHtml(t){
   const amtTxt=t.amount===0
     ?'<span style="color:var(--text3);font-size:12px">รอยืนยัน</span>'
     :'<div class="amt '+t.type+'">'+(t.type==='income'?'+':'')+'฿'+fmt(t.amount)+'</div>';
-  return `<tr>
-    <td><div class="td-name">${esc(t.name)}</div>${t.note?'<div class="td-note">'+esc(t.note)+'</div>':''}</td>
-    <td><span class="td-cat">${esc(t.category)}</span></td>
-    <td>${dueTxt(t)}</td>
-    <td><span class="badge ${t.status}" onclick="toggleStatus('${t.id}')" title="คลิกสลับสถานะ"><span class="dot"></span>${sLabel(t.status)}</span></td>
-    <td style="text-align:right">${amtTxt}</td>
-    <td><div class="row-btns">
-      <button class="row-btn" onclick="openTxModal('${t.id}')" title="แก้ไข">✎</button>
-      <button class="row-btn del" onclick="deleteTx('${t.id}')" title="ลบ">✕</button>
-    </div></td>
-  </tr>`;
+  const catEmoji = CAT_EMOJI[t.category] || '';
+  return '<tr>'+
+    '<td><div class="td-name">'+esc(t.name)+'</div>'+(t.note?'<div class="td-note">'+esc(t.note)+'</div>':'')+'</td>'+
+    '<td><span class="td-cat">'+catEmoji+' '+esc(t.category)+'</span></td>'+
+    '<td>'+dueTxt(t)+'</td>'+
+    '<td><span class="badge '+t.status+'" onclick="toggleStatus(\''+t.id+'\')" title="คลิกสลับสถานะ"><span class="dot"></span>'+sLabel(t.status)+'</span></td>'+
+    '<td style="text-align:right">'+amtTxt+'</td>'+
+    '<td><div class="row-btns">'+
+      '<button class="row-btn" onclick="openTxModal(\''+t.id+'\')" title="แก้ไข">✎</button>'+
+      '<button class="row-btn del" onclick="deleteTx(\''+t.id+'\')" title="ลบ">✕</button>'+
+    '</div></td>'+
+  '</tr>';
 }
 
 function switchTab(tab){ activeTab=tab; document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.tab===tab)); renderTx(); }
@@ -710,6 +2250,7 @@ function openTxModal(id){
     document.getElementById('txStatus').value='unpaid';
   }
   document.getElementById('txBackdrop').classList.add('open');
+  setTimeout(()=>document.getElementById('txName').focus(),100);
 }
 function closeTxModal(){ document.getElementById('txBackdrop').classList.remove('open'); }
 function closeTxIfBg(e){ if(e.target===e.currentTarget)closeTxModal(); }
@@ -720,8 +2261,14 @@ function saveTx(){
   const date=document.getElementById('txDate').value;
   if(!name||!date){ toast('⚠️ กรุณากรอกชื่อและวันที่'); return; }
   const obj={name,amount:parseFloat(document.getElementById('txAmt').value)||0,category:document.getElementById('txCat').value,date,due:document.getElementById('txDue').value,status:document.getElementById('txStatus').value,note:document.getElementById('txNote').value.trim(),type:txType};
-  if(editTxId){ const i=txs.findIndex(x=>x.id===editTxId); txs[i]={...txs[i],...obj}; toast('✓ แก้ไขแล้ว'); }
-  else { txs.push({...obj,id:'t'+Date.now()}); toast('✓ เพิ่มรายการแล้ว'); }
+  if(editTxId){
+    const i=txs.findIndex(x=>x.id===editTxId);
+    txs[i]=Object.assign({}, txs[i], obj);
+    toast('✓ แก้ไขแล้ว');
+  } else {
+    txs.push(Object.assign({}, obj, {id:'t'+Date.now()}));
+    toast('✓ เพิ่มรายการแล้ว');
+  }
   saveAll(); closeTxModal(); renderAll();
 }
 
@@ -732,12 +2279,134 @@ function toggleStatus(id){
   saveAll(); renderAll(); toast('สถานะ: '+sLabel(t.status));
 }
 
+// ── Copy from previous month ──
+function getMonthsWithData(){
+  const {m,y}=period();
+  const seen={};
+  txs.forEach(t=>{
+    const d=new Date(t.date);
+    const dm=d.getMonth(), dy=d.getFullYear();
+    if(dm===m && dy===y) return;
+    const k=dy+'-'+dm;
+    if(!seen[k]) seen[k]={m:dm,y:dy,count:0};
+    seen[k].count++;
+  });
+  return Object.values(seen).sort((a,b)=>(b.y-a.y)||(b.m-a.m));
+}
+
+function openCopyModal(){
+  const months=getMonthsWithData();
+  const sel=document.getElementById('copyFromMonth');
+  const {m,y}=period();
+  document.getElementById('copyTargetMonth').textContent=MONTHS[m]+' '+(y+543);
+  if(!months.length){
+    sel.innerHTML='<option value="">— ไม่มีเดือนที่มีข้อมูล —</option>';
+    document.getElementById('btnDoCopy').disabled=true;
+    document.getElementById('copyPreview').textContent='ยังไม่มีข้อมูลในเดือนอื่น';
+  } else {
+    sel.innerHTML='<option value="">— เลือกเดือน —</option>'+
+      months.map(x=>'<option value="'+x.y+'-'+x.m+'">'+MONTHS[x.m]+' '+(x.y+543)+' ('+x.count+' รายการ)</option>').join('');
+    sel.onchange=updateCopyPreview;
+    document.getElementById('btnDoCopy').disabled=true;
+    document.getElementById('copyPreview').textContent='เลือกเดือนเพื่อดูตัวอย่าง';
+  }
+  document.getElementById('copyBackdrop').classList.add('open');
+}
+
+function updateCopyPreview(){
+  const v=document.getElementById('copyFromMonth').value;
+  const btn=document.getElementById('btnDoCopy');
+  const prev=document.getElementById('copyPreview');
+  if(!v){ btn.disabled=true; prev.textContent='เลือกเดือนเพื่อดูตัวอย่าง'; return; }
+  const parts = v.split('-').map(Number);
+  const y = parts[0], m = parts[1];
+  const src=txs.filter(t=>{ const d=new Date(t.date); return d.getMonth()===m&&d.getFullYear()===y; });
+  btn.disabled=src.length===0;
+  prev.innerHTML='<div style="color:var(--text);margin-bottom:6px"><b>'+src.length+' รายการที่จะคัดลอก:</b></div>'
+    + src.map(t=>'<div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid var(--border)"><span>'+esc(t.name)+'</span><span class="mono" style="color:var(--text3)">฿'+fmt(t.amount)+'</span></div>').join('');
+}
+
+function doCopy(){
+  const v=document.getElementById('copyFromMonth').value;
+  if(!v) return;
+  const parts = v.split('-').map(Number);
+  const srcY = parts[0], srcM = parts[1];
+  const p = period();
+  const tgtM = p.m, tgtY = p.y;
+  const src=txs.filter(t=>{ const d=new Date(t.date); return d.getMonth()===srcM&&d.getFullYear()===srcY; });
+
+  src.forEach(t=>{
+    const oldDate=new Date(t.date);
+    const oldDue=t.due?new Date(t.due):null;
+    const newDate=new Date(tgtY,tgtM,oldDate.getDate());
+    const dateStr=newDate.toISOString().slice(0,10);
+    let dueStr='';
+    if(oldDue){
+      const monthDiff=(tgtY-srcY)*12+(tgtM-srcM);
+      const newDue=new Date(oldDue.getFullYear(), oldDue.getMonth()+monthDiff, oldDue.getDate());
+      dueStr=newDue.toISOString().slice(0,10);
+    }
+    txs.push({
+      id:'t'+Date.now()+Math.random().toString(36).slice(2,6),
+      type:t.type,
+      name:t.name,
+      amount:t.amount,
+      category:t.category,
+      date:dateStr,
+      due:dueStr,
+      status: t.type==='income' ? 'pending' : 'unpaid',
+      note:t.note||''
+    });
+  });
+  saveAll();
+  closeCopyModal();
+  renderAll();
+  toast('✓ คัดลอก '+src.length+' รายการแล้ว');
+}
+
+function closeCopyModal(){ document.getElementById('copyBackdrop').classList.remove('open'); }
+function closeCopyIfBg(e){ if(e.target===e.currentTarget)closeCopyModal(); }
+
+// ── Export ──
+function exportData(){
+  const data = { txs, goals, exportedAt: new Date().toISOString() };
+  // CSV for txs
+  const csv = ['Type,Name,Amount,Category,Date,Due,Status,Note']
+    .concat(txs.map(t=>[t.type,'"'+t.name.replace(/"/g,'""')+'"',t.amount,'"'+t.category+'"',t.date,t.due||'',t.status,'"'+(t.note||'').replace(/"/g,'""')+'"'].join(',')))
+    .join('\n');
+  const blob = new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'finance_'+new Date().toISOString().slice(0,10)+'.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('✓ ดาวน์โหลด CSV แล้ว');
+}
+
+// ── Keyboard shortcut: Cmd+Enter / Ctrl+Enter for quick add ──
+document.addEventListener('keydown', e=>{
+  if((e.metaKey||e.ctrlKey) && e.key==='Enter'){
+    e.preventDefault();
+    qaSubmit();
+  }
+  if(e.key==='Escape'){
+    closeTxModal();
+    closeGoalModal();
+    closeCopyModal();
+    closeAddToGoal();
+    closeShortcutModal();
+  }
+});
+
 let tt;
-function toast(msg){ const el=document.getElementById('toast'); el.textContent=msg; el.classList.add('show'); clearTimeout(tt); tt=setTimeout(()=>el.classList.remove('show'),2000); }
+function toast(msg){ const el=document.getElementById('toast'); el.textContent=msg; el.classList.add('show'); clearTimeout(tt); tt=setTimeout(()=>el.classList.remove('show'),2200); }
 
 // ── Boot ──
+applyTheme();
 initSel();
 if(!txs) seed();
+if(!onbDone) showOnb();
 renderAll();
 </script>
 </body>
