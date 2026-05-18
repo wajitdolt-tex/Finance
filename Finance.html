@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#f5f2ed">
-<title>Finance — บันทึกการเงินส่วนตัว</title>
+<title>Fin — ฟินทุกบาท</title>
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Serif+Display:wght@300;400;500&family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -425,6 +425,78 @@ body {
 .source-card.credit { background: var(--red-bg); border-color: var(--red-br); border-left-color: var(--red); }
 .source-card.credit .source-card-amt { color: var(--red); }
 .source-card.cash .source-card-amt { color: var(--green); }
+
+/* ── Debt Freedom Path ── */
+.freedom-card {
+  background: linear-gradient(135deg, var(--surface) 0%, var(--surface2) 100%);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 22px 24px;
+  position: relative; overflow: hidden;
+  box-shadow: var(--shadow);
+}
+.freedom-card::before {
+  content: ''; position: absolute; top: -50%; right: -10%;
+  width: 320px; height: 320px;
+  background: radial-gradient(circle, var(--accent3) 0%, transparent 60%);
+  opacity: 0.5; pointer-events: none;
+}
+.freedom-head {
+  display: flex; gap: 14px; align-items: flex-start;
+  margin-bottom: 18px; position: relative; z-index: 1;
+}
+.freedom-icon {
+  font-size: 32px; line-height: 1;
+  flex-shrink: 0;
+}
+.freedom-title {
+  font-family: 'Fraunces', serif; font-style: italic;
+  font-size: 22px; font-weight: 400; color: var(--text);
+  line-height: 1.2;
+}
+.freedom-sub {
+  font-size: 13px; color: var(--text2); margin-top: 4px;
+  line-height: 1.5;
+}
+.freedom-stats {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+  margin-bottom: 14px; position: relative; z-index: 1;
+}
+.freedom-stat {
+  background: var(--bg2); border-radius: var(--rs);
+  padding: 10px 12px;
+}
+.freedom-stat-label {
+  font-size: 10px; color: var(--text3); letter-spacing: 0.06em;
+  text-transform: uppercase; font-weight: 600; margin-bottom: 4px;
+}
+.freedom-stat-num {
+  font-size: 18px; font-weight: 600; color: var(--text);
+  line-height: 1.1;
+}
+.freedom-bar-wrap { position: relative; z-index: 1; }
+.freedom-bar {
+  height: 10px; background: var(--bg2); border-radius: 5px;
+  overflow: hidden; position: relative;
+}
+.freedom-bar-fill {
+  height: 100%; border-radius: 5px;
+  background: linear-gradient(90deg, var(--green), var(--accent2), var(--amber), var(--red));
+  background-size: 250% 100%;
+  transition: width 0.8s cubic-bezier(0.4,0,0.2,1);
+}
+.freedom-hint {
+  margin-top: 10px; padding: 10px 12px; border-radius: var(--rs);
+  font-size: 12px; line-height: 1.5;
+}
+.freedom-hint.good { background: var(--green-bg); color: var(--green); border: 1px solid var(--green-br); }
+.freedom-hint.warn { background: var(--amber-bg); color: var(--amber); border: 1px solid var(--amber-br); }
+.freedom-hint.bad { background: var(--red-bg); color: var(--red); border: 1px solid var(--red-br); }
+@media (max-width: 680px) {
+  .freedom-stats { grid-template-columns: 1fr; gap: 8px; }
+  .freedom-stat-num { font-size: 16px; }
+  .freedom-card { padding: 18px 16px; }
+}
 
 /* ── Fixed vs Variable split ── */
 .split-row {
@@ -979,8 +1051,8 @@ tbody td { padding: 12px 16px; vertical-align: middle; }
 <div class="onb-backdrop" id="onbBackdrop">
   <div class="onb">
     <div class="onb-emoji">✨</div>
-    <div class="onb-title">เริ่มต้นจัดการเงิน<br/>ของคุณอย่างเป็นระบบ</div>
-    <div class="onb-text">บันทึกรายรับ-รายจ่าย ตั้งเป้าหมายการออม<br/>และเห็นภาพรวมการเงินของคุณในที่เดียว</div>
+    <div class="onb-title">Fin<br/>ฟินทุกบาท</div>
+    <div class="onb-text">จัดการเงินให้ชัด รู้ทุกบาทที่ใช้ไป<br/>เห็นเส้นทางสู่อิสรภาพทางการเงิน</div>
     <div class="onb-features">
       <div class="onb-feat"><div class="onb-feat-icon">⚡</div><div class="onb-feat-text"><b>บันทึกเร็ว</b> — เพิ่มรายการได้ใน 3 วินาที</div></div>
       <div class="onb-feat"><div class="onb-feat-icon">📊</div><div class="onb-feat-text"><b>เห็นภาพรวม</b> — กราฟ และ insight อัตโนมัติ</div></div>
@@ -995,8 +1067,8 @@ tbody td { padding: 12px 16px; vertical-align: middle; }
   <!-- Header -->
   <div class="header">
     <div class="brand">
-      <div class="brand-title">Finance</div>
-      <div class="brand-sub">บันทึกการเงินส่วนตัว</div>
+      <div class="brand-title">Fin</div>
+      <div class="brand-sub">ฟินทุกบาท</div>
     </div>
     <div class="header-tools">
       <div class="month-bar">
@@ -1147,6 +1219,43 @@ tbody td { padding: 12px 16px; vertical-align: middle; }
   <!-- Alert -->
   <div id="alertBox" class="alert" style="display:none;margin-top:12px"></div>
 
+  <!-- Borrowed Money Alert -->
+  <div id="borrowedAlert" class="alert" style="display:none;margin-top:8px;background:linear-gradient(135deg,var(--amber-bg),var(--red-bg));border-color:var(--amber-br);color:var(--amber)"></div>
+
+  <!-- 🎯 Debt Freedom Path -->
+  <div class="section-title">เส้นทางสู่อิสรภาพทางการเงิน</div>
+  <div class="freedom-card" id="freedomCard">
+    <div class="freedom-head">
+      <div class="freedom-icon">🎯</div>
+      <div style="flex:1">
+        <div class="freedom-title" id="freedomTitle">เริ่มจากการบันทึก</div>
+        <div class="freedom-sub" id="freedomSub">บันทึกหนี้และรายจ่ายให้ครบ เพื่อดูเส้นทางสู่การปลดหนี้</div>
+      </div>
+    </div>
+    <div class="freedom-stats" id="freedomStats" style="display:none">
+      <div class="freedom-stat">
+        <div class="freedom-stat-label">หนี้คงเหลือ (เดือนนี้)</div>
+        <div class="freedom-stat-num mono" id="fsDebt">฿0</div>
+      </div>
+      <div class="freedom-stat">
+        <div class="freedom-stat-label">เงินเหลือใช้คืนหนี้</div>
+        <div class="freedom-stat-num mono" id="fsAvailable">฿0</div>
+      </div>
+      <div class="freedom-stat">
+        <div class="freedom-stat-label">คาดว่าหลุดหนี้ใน</div>
+        <div class="freedom-stat-num mono" id="fsMonths">—</div>
+      </div>
+    </div>
+    <div class="freedom-bar-wrap" id="freedomBarWrap" style="display:none">
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text3);margin-bottom:6px">
+        <span>รายจ่ายประจำ + หนี้</span>
+        <span id="fsRatio">— %</span>
+      </div>
+      <div class="freedom-bar"><div class="freedom-bar-fill" id="freedomBarFill" style="width:0%"></div></div>
+      <div class="freedom-hint" id="freedomHint"></div>
+    </div>
+  </div>
+
   <!-- Fixed vs Variable split -->
   <div class="section-title">รายจ่ายประจำ vs เร่งด่วน</div>
   <div class="split-row">
@@ -1236,10 +1345,6 @@ tbody td { padding: 12px 16px; vertical-align: middle; }
       <button class="btn-copy" onclick="bringRecurringForward()" title="ดึงรายการประจำ (🔁) จากเดือนที่แล้วมาเดือนนี้" style="background:var(--accent3);color:var(--accent);border-color:var(--accent)">
         🔁 ดึงรายการประจำ
       </button>
-      <button class="btn-copy" onclick="openCopyModal()" title="คัดลอกรายการทั้งหมดจากเดือนก่อน">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-        คัดลอกทั้งเดือน
-      </button>
       <button class="btn-add" onclick="openTxModal()">+ เพิ่มแบบละเอียด</button>
     </div>
   </div>
@@ -1298,32 +1403,29 @@ tbody td { padding: 12px 16px; vertical-align: middle; }
       <div style="font-size:11px;color:var(--text3);margin-top:10px;text-align:center" id="bmLastBackup">ยังไม่เคยสำรองข้อมูล</div>
     </div>
 
-    <!-- Backup section -->
+    <!-- Backup section — CSV only -->
     <div style="border:1px solid var(--green-br);background:var(--green-bg);border-radius:var(--rs);padding:14px;margin-bottom:12px">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
-        <div style="font-size:20px">💾</div>
+        <div style="font-size:20px">📊</div>
         <div>
           <div style="font-size:14px;font-weight:600;color:var(--green)">สำรองข้อมูล (Backup)</div>
-          <div style="font-size:11px;color:var(--text2);margin-top:2px">เก็บไฟล์ไว้ในที่ปลอดภัย เผื่อข้อมูลหาย</div>
+          <div style="font-size:11px;color:var(--text2);margin-top:2px">ดาวน์โหลดเป็นไฟล์ CSV เปิดใน Excel/Google Sheets ได้</div>
         </div>
       </div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <button class="btn-ok" style="flex:1;min-width:140px" onclick="exportJSON()">📥 ดาวน์โหลด JSON (ทุกอย่าง)</button>
-        <button class="btn-copy" style="flex:1;min-width:140px" onclick="exportCSV()">📊 ดาวน์โหลด CSV (Excel)</button>
-      </div>
+      <button class="btn-ok" style="width:100%" onclick="exportCSV()">📥 ดาวน์โหลด CSV</button>
     </div>
 
-    <!-- Restore section -->
+    <!-- Restore section — CSV import -->
     <div style="border:1px solid var(--blue-br);background:var(--blue-bg);border-radius:var(--rs);padding:14px;margin-bottom:12px">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
         <div style="font-size:20px">📤</div>
         <div>
           <div style="font-size:14px;font-weight:600;color:var(--blue)">กู้คืนข้อมูล (Restore)</div>
-          <div style="font-size:11px;color:var(--text2);margin-top:2px">นำเข้าไฟล์ JSON ที่เคยสำรองไว้</div>
+          <div style="font-size:11px;color:var(--text2);margin-top:2px">นำเข้าไฟล์ CSV ที่เคยดาวน์โหลดไว้</div>
         </div>
       </div>
-      <input type="file" id="bmFileInput" accept=".json,application/json" style="display:none" onchange="handleImportFile(event)"/>
-      <button class="btn-ok" style="width:100%;background:var(--blue)" onclick="triggerImport()">📂 เลือกไฟล์ JSON</button>
+      <input type="file" id="bmFileInput" accept=".csv,text/csv" style="display:none" onchange="handleImportFile(event)"/>
+      <button class="btn-ok" style="width:100%;background:var(--blue)" onclick="triggerImport()">📂 เลือกไฟล์ CSV</button>
       <div style="font-size:10px;color:var(--text3);margin-top:6px;text-align:center">เลือกได้ว่าจะ <b>แทนที่</b> หรือ <b>รวม</b> กับข้อมูลปัจจุบัน</div>
     </div>
 
@@ -1458,6 +1560,7 @@ tbody td { padding: 12px 16px; vertical-align: middle; }
           <option value="หุ้น/การลงทุน">📈 หุ้น/การลงทุน</option>
           <option value="เงินเดือน">💼 เงินเดือน</option>
           <option value="รายได้อื่น">📊 รายได้อื่น</option>
+          <option value="เงินยืม/สินเชื่อเข้า">⚠️ เงินยืม/สินเชื่อเข้า</option>
           <option value="อื่นๆ">📋 อื่นๆ</option>
         </select>
       </div>
@@ -1501,6 +1604,7 @@ tbody td { padding: 12px 16px; vertical-align: middle; }
           <option value="เดินทาง">🚗 เดินทาง</option>
           <option value="เงินเดือน">💼 เงินเดือน</option>
           <option value="รายได้อื่น">📊 รายได้อื่น</option>
+          <option value="เงินยืม/สินเชื่อเข้า">⚠️ เงินยืม/สินเชื่อเข้า</option>
           <option value="อื่นๆ">📋 อื่นๆ</option>
         </select>
       </div>
@@ -1569,13 +1673,20 @@ tbody td { padding: 12px 16px; vertical-align: middle; }
 
 <!-- ── Add to Goal Modal ── -->
 <div class="backdrop" id="addToGoalBackdrop" onclick="closeAddToGoalIfBg(event)">
-  <div class="modal" style="max-width:380px">
+  <div class="modal" style="max-width:400px">
     <div class="modal-head">
       <div class="modal-title">เพิ่มเงินออม</div>
       <button class="modal-x" onclick="closeAddToGoal()">✕</button>
     </div>
     <div class="fg"><label class="fl">เป้าหมาย</label><div id="atgName" style="font-size:15px;font-weight:600">—</div></div>
     <div class="fg"><label class="fl">จำนวน (บาท)</label><input class="fi mono" id="atgAmt" type="number" step="0.01" placeholder="0.00" autofocus/></div>
+    <div class="fg" style="background:var(--blue-bg);border:1px solid var(--blue-br);border-radius:var(--rs);padding:10px 12px">
+      <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px;color:var(--text);font-weight:500">
+        <input type="checkbox" id="atgAsExpense" checked style="width:18px;height:18px;accent-color:var(--accent)"/>
+        <span>💸 บันทึกเป็นรายจ่ายของเดือนนี้ด้วย</span>
+      </label>
+      <div style="font-size:11px;color:var(--text3);margin-top:4px;margin-left:28px">เงินออมคือเงินที่ถูกหักออกจากบัญชีจริง → ควรนับเป็นรายจ่าย</div>
+    </div>
     <div class="modal-foot">
       <button class="btn-cancel" onclick="closeAddToGoal()">ยกเลิก</button>
       <button class="btn-ok" onclick="doAddToGoal()">เพิ่ม</button>
@@ -1618,7 +1729,7 @@ const MONTHS_SHORT = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค
 const CAT_EMOJI = {
   'หนี้/สินเชื่อ':'💳','ประกัน':'🛡️','อินเตอร์เน็ต':'📶','ออนไลน์/ช็อปปิ้ง':'🛍️',
   'สาธารณูปโภค':'💡','ออมทรัพย์':'💰','หุ้น/การลงทุน':'📈','อาหาร':'🍜',
-  'เดินทาง':'🚗','เงินเดือน':'💼','รายได้อื่น':'📊','อื่นๆ':'📋'
+  'เดินทาง':'🚗','เงินเดือน':'💼','รายได้อื่น':'📊','เงินยืม/สินเชื่อเข้า':'⚠️','อื่นๆ':'📋'
 };
 const CAT_COLORS = ['#4a6741','#9b4a3a','#8a6a2a','#2e5a8a','#6b4a7d','#3d6b38','#c89a3a','#5c7d52','#a85c4a','#7d6a4a'];
 
@@ -1787,20 +1898,9 @@ function period(){ return { m:+document.getElementById('selMonth').value, y:+doc
 
 // ── Seed ──
 function seed(){
-  // ✨ Neutral demo data — ไม่มีข้อมูลจริงของใคร
-  // ผู้ใช้สามารถลบทิ้งและเริ่มใหม่ได้
-  const today = new Date();
-  const y = today.getFullYear();
-  const m = today.getMonth() + 1;
-  const d = (day)=>`${y}-${String(m).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
-  txs = [
-    {id:'demo1',type:'income',name:'เงินเดือน (ตัวอย่าง)',amount:25000,category:'เงินเดือน',date:d(1),due:d(1),status:'paid',note:'ลบรายการนี้แล้วเริ่มกรอกข้อมูลของคุณ',isRecurring:true,paymentSource:'cash'},
-    {id:'demo2',type:'expense',name:'ค่าเช่าบ้าน (ตัวอย่าง)',amount:6000,category:'สาธารณูปโภค',date:d(1),due:d(5),status:'unpaid',note:'',isRecurring:true,paymentSource:'cash'},
-    {id:'demo3',type:'expense',name:'ค่าเน็ต (ตัวอย่าง)',amount:500,category:'อินเตอร์เน็ต',date:d(1),due:d(10),status:'unpaid',note:'',isRecurring:true,paymentSource:'cash'}
-  ];
-  goals = [
-    {id:'demo_g1',name:'เงินสำรองฉุกเฉิน (ตัวอย่าง)',target:30000,saved:0,due:'',note:'6 เดือนของค่าใช้จ่าย'}
-  ];
+  // ✨ เริ่มต้นด้วยข้อมูลว่าง — ผู้ใช้กรอกข้อมูลเองทั้งหมด
+  txs = [];
+  goals = [];
   saveAll();
 }
 
@@ -1851,11 +1951,15 @@ function finishOnb(){
 // ── Render all ──
 function renderAll(){
   const all = monthItems();
-  const inc = all.filter(i=>i.type==='income').reduce((s,i)=>s+i.amount,0);
+  // ⚠️ แยกเงินยืม/สินเชื่อเข้า ออกจากรายได้จริง
+  const realIncome = all.filter(i=>i.type==='income' && i.category!=='เงินยืม/สินเชื่อเข้า').reduce((s,i)=>s+i.amount,0);
+  const borrowedIn = all.filter(i=>i.type==='income' && i.category==='เงินยืม/สินเชื่อเข้า').reduce((s,i)=>s+i.amount,0);
+  const inc = realIncome; // ใช้ realIncome ในการคำนวณทุกอย่างต่อ (savings rate, balance)
+  const incTotal = realIncome + borrowedIn; // ทั้งหมดที่ได้รับเข้าบัญชี (เพื่อแสดงผล)
   const exp = all.filter(i=>i.type==='expense').reduce((s,i)=>s+i.amount,0);
   const unpaidItems = all.filter(i=>i.status==='unpaid'&&i.type==='expense');
   const debt = unpaidItems.reduce((s,i)=>s+i.amount,0);
-  const bal = inc - exp;
+  const bal = inc - exp; // คงเหลือ "จริง" — ไม่นับเงินยืม
 
   // Hero
   document.getElementById('heroBalance').innerHTML = '<span class="sign">฿</span>'+(bal<0?'-':'')+fmt(Math.abs(bal));
@@ -1863,12 +1967,21 @@ function renderAll(){
   document.getElementById('heroInc').textContent = '฿'+fmt(inc);
   document.getElementById('heroExp').textContent = '฿'+fmt(exp);
 
-  // Savings rate
+  // Borrowed alert
+  const borrowedBox = document.getElementById('borrowedAlert');
+  if(borrowedBox){
+    if(borrowedIn>0){
+      borrowedBox.style.display='';
+      borrowedBox.innerHTML = '⚠️ <b>มีเงินยืม/สินเชื่อเข้า ฿'+fmt(borrowedIn)+'</b> เดือนนี้ — นี่ไม่ใช่รายได้จริง ต้องจ่ายคืน';
+    } else borrowedBox.style.display='none';
+  }
+
+  // Savings rate (คำนวณจากรายได้จริงเท่านั้น)
   const sr = inc>0 ? Math.max(0, Math.min(100, (bal/inc)*100)) : 0;
   const circ = 2*Math.PI*24;
   document.getElementById('srRingFill').style.strokeDashoffset = circ*(1-sr/100);
   document.getElementById('srPct').textContent = Math.round(sr)+'%';
-  document.getElementById('srText').textContent = sr>=20 ? 'เยี่ยม! สูงกว่าเป้า 20%' : sr>=10 ? 'พอใช้ ตั้งเป้า 20%' : sr>0 ? 'ต่ำกว่าเป้า 20%' : 'ยังไม่มีออม';
+  document.getElementById('srText').textContent = sr>=20 ? 'เยี่ยม! สูงกว่าเป้า 20%' : sr>=10 ? 'พอใช้ ตั้งเป้า 20%' : sr>0 ? 'ต่ำกว่าเป้า 20%' : (exp>0?'ติดลบ ใช้เกินรายได้':'ยังไม่มีออม');
 
   // Cards
   document.getElementById('sIncome').textContent  = '฿'+fmt(inc);
@@ -1876,7 +1989,7 @@ function renderAll(){
   document.getElementById('sBalance').textContent = (bal<0?'-':'')+'฿'+fmt(Math.abs(bal));
   document.getElementById('sBalance').style.color = bal<0 ? 'var(--red)' : 'var(--text)';
   document.getElementById('sDebt').textContent     = '฿'+fmt(debt);
-  document.getElementById('sIncomeN').textContent  = all.filter(i=>i.type==='income').length+' รายการ';
+  document.getElementById('sIncomeN').textContent  = all.filter(i=>i.type==='income' && i.category!=='เงินยืม/สินเชื่อเข้า').length+' รายการ' + (borrowedIn>0 ? ' (+ยืม ฿'+fmt(borrowedIn)+')' : '');
   document.getElementById('sExpenseN').textContent = all.filter(i=>i.type==='expense').length+' รายการ';
   document.getElementById('sUnpaid').textContent   = unpaidItems.length+' รายการค้างชำระ';
   document.getElementById('sDebtN').textContent    = unpaidItems.length+' รายการ';
@@ -1898,15 +2011,99 @@ function renderAll(){
     ab.innerHTML='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> เกินกำหนดชำระ '+overdue.length+' รายการ: '+overdue.map(i=>i.name).join(', ');
   } else ab.style.display='none';
 
+  renderFreedom(inc, exp, all, unpaidItems, borrowedIn);
   renderSplit(all);
   renderSourceSummary(all);
-  renderInsights(inc, exp, all);
+  renderInsights(inc, exp, all, borrowedIn);
   renderBars();
   renderDonut(all);
   renderTemplates();
   renderQaSources();
   renderGoals();
   renderTx();
+}
+
+// ── 🎯 Debt Freedom Path ──
+function renderFreedom(inc, exp, all, unpaidItems, borrowedIn){
+  const card = document.getElementById('freedomCard');
+  if(!card) return;
+  // Calculate total debt-related expenses (current + all unpaid debts)
+  const debtExpenses = all.filter(i=>i.type==='expense' && i.category==='หนี้/สินเชื่อ').reduce((s,i)=>s+i.amount,0);
+  const fixedExpenses = all.filter(i=>i.type==='expense' && i.isRecurring).reduce((s,i)=>s+i.amount,0);
+  const variableExp = all.filter(i=>i.type==='expense' && !i.isRecurring).reduce((s,i)=>s+i.amount,0);
+  const totalUnpaid = unpaidItems.reduce((s,i)=>s+i.amount,0);
+
+  // ถ้ายังไม่มีข้อมูลพอ — แสดง prompt
+  if(inc === 0 && exp === 0){
+    document.getElementById('freedomTitle').textContent = 'เริ่มจากการบันทึก';
+    document.getElementById('freedomSub').innerHTML = 'บันทึก<b>รายได้</b>และ<b>รายจ่าย</b>เข้ามา เพื่อดูเส้นทางสู่อิสรภาพทางการเงิน';
+    document.getElementById('freedomStats').style.display = 'none';
+    document.getElementById('freedomBarWrap').style.display = 'none';
+    return;
+  }
+  document.getElementById('freedomStats').style.display = '';
+  document.getElementById('freedomBarWrap').style.display = '';
+
+  // Available for paying off debt
+  const available = inc - fixedExpenses - variableExp;
+  document.getElementById('fsDebt').textContent = '฿'+fmt(debtExpenses);
+  document.getElementById('fsAvailable').textContent = (available<0?'-':'')+'฿'+fmt(Math.abs(available));
+  document.getElementById('fsAvailable').style.color = available<0 ? 'var(--red)' : 'var(--green)';
+
+  // Estimate months to freedom (rough)
+  let monthsText = '—';
+  if(available > 0 && totalUnpaid > 0){
+    const months = Math.ceil(totalUnpaid / available);
+    if(months <= 12) monthsText = months+' เดือน';
+    else if(months <= 36) monthsText = months+' เดือน (~'+(months/12).toFixed(1)+' ปี)';
+    else monthsText = '3+ ปี';
+  } else if(totalUnpaid === 0){
+    monthsText = '🎉 อิสระ!';
+  } else if(available <= 0){
+    monthsText = '⚠️ ติดลบ';
+  }
+  document.getElementById('fsMonths').textContent = monthsText;
+
+  // Debt-to-Income ratio for the bar
+  const ratio = inc>0 ? Math.min(100, ((fixedExpenses+variableExp)/inc)*100) : 100;
+  document.getElementById('freedomBarFill').style.width = ratio+'%';
+  // animate gradient position based on ratio
+  document.getElementById('freedomBarFill').style.backgroundPosition = ratio+'% 0';
+  document.getElementById('fsRatio').textContent = Math.round(ratio)+'%';
+
+  // Title + Hint based on situation
+  const hint = document.getElementById('freedomHint');
+  let title, sub, hintText, hintClass;
+  if(borrowedIn > 0){
+    title = '🚨 กำลังใช้สินเชื่อเลี้ยงชีวิต';
+    sub = 'เดือนนี้ใช้เงินยืม ฿'+fmt(borrowedIn)+' — ระวังวงจรหนี้';
+    hintText = '💡 <b>วิธีหลุดจากวงจรนี้:</b> ลดรายจ่ายเร่งด่วน (อาหารนอกบ้าน, ของกินเล่น) อย่างน้อย 20% และพยายามไม่ใช้สินเชื่อในเดือนต่อไป';
+    hintClass = 'bad';
+  } else if(available <= 0){
+    title = '⚠️ เดือนนี้ใช้เกินตัว';
+    sub = 'รายจ่ายมากกว่ารายได้ ฿'+fmt(Math.abs(available))+' — ต้องปรับด่วน';
+    hintText = '💡 <b>เริ่มที่นี่:</b> ดูในส่วน "ใช้เงินจากแหล่งไหน" — มีหมวดไหนที่ตัดได้ไหม? ค่ากินนอกบ้าน, ของกินเล่น, ออนไลน์ช็อปปิ้ง';
+    hintClass = 'bad';
+  } else if(ratio >= 80){
+    title = '🟡 เงินรั่วเยอะ';
+    sub = 'ใช้ไป '+Math.round(ratio)+'% ของรายได้ เหลือออมแค่ '+(100-Math.round(ratio))+'%';
+    hintText = '💡 ลองดูหมวด "รายจ่ายเร่งด่วน" — ถ้าตัดลง 30% จะมีเงินเหลือเพิ่มอีก ฿'+fmt(variableExp*0.3)+'/เดือน → ฿'+fmt(variableExp*0.3*12)+'/ปี';
+    hintClass = 'warn';
+  } else if(ratio >= 50){
+    title = '🟢 กำลังควบคุมได้';
+    sub = 'ใช้ '+Math.round(ratio)+'% รายได้ ออม '+(100-Math.round(ratio))+'% — เกินมาตรฐาน';
+    hintText = '👏 ทำได้ดี! เริ่มจัดสรรเงินส่วนเกินไปลงทุน หรือเร่งใช้หนี้คงเหลือให้เร็วขึ้น';
+    hintClass = 'good';
+  } else {
+    title = '✨ สุขภาพการเงินดีเยี่ยม';
+    sub = 'ใช้แค่ '+Math.round(ratio)+'% ของรายได้ ออมได้ '+(100-Math.round(ratio))+'%';
+    hintText = '🎯 ถ้าออมเดือนละ ฿'+fmt(available)+' จะมี ฿'+fmt(available*12)+'/ปี — ลองตั้งเป้าหมายระยะยาวดู';
+    hintClass = 'good';
+  }
+  document.getElementById('freedomTitle').textContent = title;
+  document.getElementById('freedomSub').textContent = sub;
+  hint.className = 'freedom-hint '+hintClass;
+  hint.innerHTML = hintText;
 }
 
 // ── Fixed vs Variable expenses ──
@@ -1964,82 +2161,217 @@ function renderSourceSummary(all){
 }
 
 // ── Insights (smart) ──
-function renderInsights(inc, exp, all){
+function renderInsights(inc, exp, all, borrowedIn){
   const box = document.getElementById('insightsBox');
   const items = [];
   const bal = inc - exp;
   const {m,y} = period();
+  borrowedIn = borrowedIn || 0;
 
   // Last month compare
   const lastM = m===0?11:m-1, lastY = m===0?y-1:y;
   const lastAll = monthItems(lastM, lastY);
   const lastExp = lastAll.filter(i=>i.type==='expense').reduce((s,i)=>s+i.amount,0);
 
-  // Insight 1: Expense vs last month
-  if(lastExp>0 && exp>0){
-    const diff = exp - lastExp;
-    const pct = Math.round(Math.abs(diff)/lastExp*100);
-    if(diff > 0 && pct >= 10){
-      items.push({type:'warn',icon:'📈',title:`รายจ่ายเพิ่มขึ้น ${pct}%`,text:`สูงกว่าเดือนที่แล้ว ฿${fmt(diff)} — ลองดูว่าหมวดไหนเพิ่มเยอะที่สุด`});
-    } else if(diff < 0 && pct >= 10){
-      items.push({type:'good',icon:'📉',title:`รายจ่ายลดลง ${pct}%`,text:`ประหยัดได้กว่าเดือนที่แล้ว ฿${fmt(Math.abs(diff))} — ทำได้ดีมาก!`});
-    }
+  // ── Group A: เตือนภัย (สูงสุด) ──
+  // A1: ใช้สินเชื่อเลี้ยงชีวิต
+  if(borrowedIn > 0 && exp > 0){
+    const reliance = Math.round((borrowedIn / (inc+borrowedIn))*100);
+    items.push({
+      type:'warn',
+      icon:'🚨',
+      priority: 10,
+      title:`ใช้สินเชื่อ ${reliance}% เลี้ยงชีวิตเดือนนี้`,
+      text:`ยืม ฿${fmt(borrowedIn)} — ทุก ฿100 ที่ใช้ มี ฿${reliance} ที่เป็นหนี้ ต้องวางแผนเลิกพึ่งสินเชื่อ`
+    });
   }
 
-  // Insight 2: Top category
-  const byCat = {};
-  all.filter(i=>i.type==='expense'&&i.amount>0).forEach(i=>{
-    byCat[i.category] = (byCat[i.category]||0) + i.amount;
-  });
-  const sorted = Object.entries(byCat).sort((a,b)=>b[1]-a[1]);
-  if(sorted.length && exp>0){
-    const [topCat, topAmt] = sorted[0];
-    const topPct = Math.round(topAmt/exp*100);
-    if(topPct >= 40){
-      items.push({type:'info',icon:CAT_EMOJI[topCat]||'📊',title:`${topCat} กิน ${topPct}% ของรายจ่าย`,text:`฿${fmt(topAmt)} จากทั้งหมด ฿${fmt(exp)} — เป็นหมวดที่ใช้จ่ายมากสุด`});
-    }
+  // A2: รายจ่ายมากกว่ารายได้
+  if(inc > 0 && bal < 0){
+    const overspend = Math.abs(bal);
+    items.push({
+      type:'warn',
+      icon:'⚠️',
+      priority: 9,
+      title:`ติดลบ ฿${fmt(overspend)} เดือนนี้`,
+      text:`ใช้เกินรายได้ ${Math.round((overspend/inc)*100)}% — ถ้าเป็นแบบนี้ทุกเดือน ใน 1 ปีจะติดลบ ฿${fmt(overspend*12)}`
+    });
   }
 
-  // Insight 3: Savings rate
-  if(inc > 0){
-    const sr = (bal/inc)*100;
-    if(sr >= 20){
-      items.push({type:'good',icon:'🎯',title:`ออมได้ ${Math.round(sr)}% ของรายได้`,text:`เกินเกณฑ์มาตรฐาน 20% — สุดยอด! แนะนำเอาส่วนเกินไปลงทุน`});
-    } else if(sr <= 0){
-      items.push({type:'warn',icon:'⚠️',title:'รายจ่ายมากกว่ารายได้',text:`ติดลบ ฿${fmt(Math.abs(bal))} — ต้องลดรายจ่ายหรือหาทางเพิ่มรายได้`});
-    } else if(sr < 10){
-      items.push({type:'warn',icon:'💡',title:`ออมได้แค่ ${Math.round(sr)}%`,text:'แนะนำตั้งเป้าออมอย่างน้อย 20% ของรายได้ — ลองตัดรายจ่ายไม่จำเป็นดู'});
-    }
-  }
-
-  // Insight 4: Upcoming dues
-  const upcoming = all.filter(i=>i.status==='unpaid'&&i.due&&diffDays(i.due)>=0&&diffDays(i.due)<=7);
-  if(upcoming.length){
-    const sum = upcoming.reduce((s,i)=>s+i.amount,0);
-    items.push({type:'info',icon:'⏰',title:`มี ${upcoming.length} รายการครบกำหนดใน 7 วัน`,text:`รวม ฿${fmt(sum)} — อย่าลืมเตรียมเงินไว้`});
-  }
-
-  // Insight 5: Debt ratio
+  // A3: หนี้กิน X% ของรายได้
   if(inc > 0){
     const debtCat = all.filter(i=>i.type==='expense'&&i.category==='หนี้/สินเชื่อ').reduce((s,i)=>s+i.amount,0);
     const dr = (debtCat/inc)*100;
     if(dr >= 50){
-      items.push({type:'warn',icon:'💳',title:`หนี้กิน ${Math.round(dr)}% ของรายได้`,text:'อยู่ในเกณฑ์อันตราย — ควรเร่งจัดการ refinance หรือ consolidate หนี้'});
-    } else if(dr >= 35 && dr < 50){
-      items.push({type:'info',icon:'⚖️',title:`หนี้ ${Math.round(dr)}% ของรายได้`,text:'ใกล้เกณฑ์เสี่ยง (35-50%) — เริ่มวางแผนปลดหนี้'});
+      items.push({
+        type:'warn',
+        icon:'💳',
+        priority: 8,
+        title:`ทำงานเดือนละครึ่ง เพื่อใช้หนี้`,
+        text:`฿${fmt(debtCat)} (${Math.round(dr)}% ของรายได้) หมดไปกับหนี้ — ลองสำรวจหนี้ที่ดอกเบี้ยสูงสุด แล้วปิดก่อน`
+      });
+    } else if(dr >= 35){
+      items.push({
+        type:'info',
+        icon:'⚖️',
+        priority: 5,
+        title:`หนี้ ${Math.round(dr)}% — ใกล้เกณฑ์เสี่ยง`,
+        text:`฿${fmt(debtCat)}/เดือน หมดไปกับหนี้ — ถ้าลดได้ 10% จะมีเงินเหลือ ฿${fmt(debtCat*0.1)}/เดือน`
+      });
     }
   }
 
-  if(!items.length){
-    items.push({type:'info',icon:'✨',title:'เริ่มบันทึกรายการ',text:'เพิ่มรายรับ-รายจ่ายเพื่อดู insight อัจฉริยะที่นี่'});
+  // ── Group B: เงินรั่ว / โอกาสประหยัด ──
+  // B1: หมวดที่ใช้เยอะที่สุด → คำนวณว่าถ้าลด 20% จะประหยัดได้เท่าไร
+  const byCat = {};
+  all.filter(i=>i.type==='expense'&&i.amount>0).forEach(i=>{
+    byCat[i.category] = (byCat[i.category]||0) + i.amount;
+  });
+  const sortedCat = Object.entries(byCat).sort((a,b)=>b[1]-a[1]);
+  // ใช้หมวดที่ไม่ใช่หนี้ — หาเงินรั่ว
+  const nonDebtCats = sortedCat.filter(([c])=>c!=='หนี้/สินเชื่อ' && c!=='ประกัน' && c!=='สาธารณูปโภค');
+  if(nonDebtCats.length && exp > 0){
+    const [topCat, topAmt] = nonDebtCats[0];
+    if(topAmt >= 1000){
+      const save20 = topAmt * 0.2;
+      items.push({
+        type:'info',
+        icon:CAT_EMOJI[topCat]||'💡',
+        priority: 6,
+        title:`เงินรั่วใน "${topCat}" ${Math.round(topAmt/exp*100)}%`,
+        text:`฿${fmt(topAmt)}/เดือน — ถ้าลดลง 20% จะเก็บได้ ฿${fmt(save20)}/เดือน หรือ ฿${fmt(save20*12)}/ปี`
+      });
+    }
   }
+
+  // B2: รายจ่ายเร่งด่วน (variable) เทียบ recurring
+  const variableExp = all.filter(i=>i.type==='expense' && !i.isRecurring).reduce((s,i)=>s+i.amount,0);
+  const recurringExp = all.filter(i=>i.type==='expense' && i.isRecurring).reduce((s,i)=>s+i.amount,0);
+  if(variableExp > 0 && recurringExp > 0 && variableExp > recurringExp){
+    items.push({
+      type:'info',
+      icon:'⚡',
+      priority: 4,
+      title:`รายจ่ายเร่งด่วน > รายจ่ายประจำ`,
+      text:`เร่งด่วน ฿${fmt(variableExp)} vs ประจำ ฿${fmt(recurringExp)} — ของกินใช้ทั่วไปกินเยอะกว่าค่าผ่อน เริ่มจดละเอียดมากขึ้น`
+    });
+  }
+
+  // ── Group C: เปรียบเทียบเดือนก่อน ──
+  if(lastExp>0 && exp>0){
+    const diff = exp - lastExp;
+    const pct = Math.round(Math.abs(diff)/lastExp*100);
+    if(diff > 0 && pct >= 15){
+      items.push({
+        type:'warn',
+        icon:'📈',
+        priority: 5,
+        title:`เดือนนี้ใช้มากขึ้น ${pct}%`,
+        text:`+฿${fmt(diff)} จากเดือนที่แล้ว — ถ้าไม่ระวัง ใน 6 เดือนจะใช้เพิ่ม ฿${fmt(diff*6)}`
+      });
+    } else if(diff < 0 && pct >= 10){
+      items.push({
+        type:'good',
+        icon:'🎉',
+        priority: 6,
+        title:`ประหยัดได้ ฿${fmt(Math.abs(diff))}!`,
+        text:`น้อยลง ${pct}% เดือนนี้ ทำได้ดีมาก! ถ้าทำได้ทั้งปีจะเก็บได้ ฿${fmt(Math.abs(diff)*12)}`
+      });
+    }
+  }
+
+  // ── Group D: แรงบันดาลใจ + กำลังใจ ──
+  // D1: อัตราออม — positive reinforcement
+  if(inc > 0 && bal > 0){
+    const sr = (bal/inc)*100;
+    if(sr >= 30){
+      items.push({
+        type:'good',
+        icon:'🌟',
+        priority: 7,
+        title:`สุดยอด! ออม ${Math.round(sr)}%`,
+        text:`฿${fmt(bal)} ในเดือนเดียว — ในอีก 5 ปี จะมี ฿${fmt(bal*60)} (ไม่นับดอกเบี้ย) คุณกำลังสร้างอนาคต`
+      });
+    } else if(sr >= 20){
+      items.push({
+        type:'good',
+        icon:'✨',
+        priority: 5,
+        title:`ออมได้ ${Math.round(sr)}% — เกินมาตรฐาน`,
+        text:`฿${fmt(bal)}/เดือน × 12 = ฿${fmt(bal*12)}/ปี — ลองลงทุนได้แล้ว เงินจะทำงานให้คุณ`
+      });
+    } else if(sr >= 10){
+      items.push({
+        type:'info',
+        icon:'💪',
+        priority: 3,
+        title:`เริ่มมีเงินเหลือแล้ว ฿${fmt(bal)}`,
+        text:`ออมได้ ${Math.round(sr)}% — เป้าหมายต่อไป 20% (เพิ่มอีก ฿${fmt(inc*0.1)}/เดือน)`
+      });
+    }
+  }
+
+  // D2: ไม่มีหนี้ค้าง = เยี่ยม
+  const unpaidCount = all.filter(i=>i.status==='unpaid' && i.type==='expense').length;
+  if(unpaidCount === 0 && exp > 0){
+    items.push({
+      type:'good',
+      icon:'🏆',
+      priority: 4,
+      title:`ไม่มีรายการค้างชำระ`,
+      text:`เก่งมาก! การจ่ายตรงเวลาช่วยให้ไม่เสียดอกเบี้ยเพิ่ม และรักษาเครดิตดี`
+    });
+  }
+
+  // ── Group E: Action items ──
+  // E1: รายการครบกำหนดเร็วๆ นี้
+  const upcoming = all.filter(i=>i.status==='unpaid'&&i.due&&diffDays(i.due)>=0&&diffDays(i.due)<=7);
+  if(upcoming.length){
+    const sum = upcoming.reduce((s,i)=>s+i.amount,0);
+    items.push({
+      type:'info',
+      icon:'⏰',
+      priority: 7,
+      title:`${upcoming.length} รายการครบกำหนดใน 7 วัน`,
+      text:`รวม ฿${fmt(sum)} — เตรียมเงินไว้: ${upcoming.slice(0,3).map(i=>i.name).join(', ')}${upcoming.length>3?'...':''}`
+    });
+  }
+
+  // E2: ค่าใช้จ่ายต่อวัน (เทียบกับวันในเดือน)
+  if(exp > 0){
+    const dayOfMonth = new Date().getDate();
+    const isCurrentMonth = (m === new Date().getMonth() && y === new Date().getFullYear());
+    if(isCurrentMonth && dayOfMonth >= 5){
+      const avgPerDay = exp / dayOfMonth;
+      const projectedMonth = avgPerDay * 30;
+      items.push({
+        type:'info',
+        icon:'📊',
+        priority: 2,
+        title:`ใช้เฉลี่ย ฿${fmt(avgPerDay)}/วัน`,
+        text:`${dayOfMonth} วันผ่านมา ใช้ไป ฿${fmt(exp)} — คาดทั้งเดือนจะใช้ ฿${fmt(projectedMonth)}`
+      });
+    }
+  }
+
+  // Empty state — ให้แรงบันดาลใจ
+  if(!items.length){
+    if(inc===0 && exp===0){
+      items.push({type:'info',icon:'🌱',title:'เริ่มต้นการเดินทาง',text:'การเข้าใจการเงินตัวเองคือก้าวแรกของอิสรภาพ เริ่มจากบันทึกค่ากาแฟแก้วเดียวก็พอ'});
+    } else {
+      items.push({type:'good',icon:'👏',title:'กำลังเก็บข้อมูล',text:'บันทึกต่อไปอีก 1-2 สัปดาห์ ระบบจะวิเคราะห์รูปแบบการใช้เงินของคุณได้แม่นยำขึ้น'});
+    }
+  }
+
+  // Sort by priority and show top 4
+  items.sort((a,b)=>(b.priority||0)-(a.priority||0));
 
   box.innerHTML = items.slice(0,4).map(i=>`
     <div class="insight ${i.type}">
       <div class="insight-icon">${i.icon}</div>
       <div class="insight-body">
         <div class="insight-title">${esc(i.title)}</div>
-        <div class="insight-text">${esc(i.text)}</div>
+        <div class="insight-text">${i.text}</div>
       </div>
     </div>
   `).join('');
@@ -2688,9 +3020,35 @@ function doAddToGoal(){
   const amt = parseFloat(document.getElementById('atgAmt').value)||0;
   if(amt<=0){ toast('⚠️ กรอกจำนวน'); return; }
   const g = goals.find(x=>x.id===addToGoalId);
+  const recordAsExpense = document.getElementById('atgAsExpense').checked;
   g.saved += amt;
+  // สร้างรายการ expense ในเดือนปัจจุบัน (เพราะเงินออมถือเป็นการเอาเงินออกจากบัญชี)
+  if(recordAsExpense){
+    const p = period();
+    const today = new Date();
+    let dateStr;
+    if(p.m === today.getMonth() && p.y === today.getFullYear()){
+      dateStr = today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0');
+    } else {
+      const lastDay = new Date(p.y, p.m+1, 0).getDate();
+      dateStr = p.y+'-'+String(p.m+1).padStart(2,'0')+'-'+String(Math.min(today.getDate(), lastDay)).padStart(2,'0');
+    }
+    txs.push({
+      id:'t'+Date.now(),
+      type: 'expense',
+      name: '💰 ออมเข้า '+g.name,
+      amount: amt,
+      category: 'ออมทรัพย์',
+      date: dateStr,
+      due: dateStr,
+      status: 'paid',
+      note: 'เพิ่มเข้าเป้าหมาย: '+g.name,
+      isRecurring: false,
+      paymentSource: qaSourceId || 'cash'
+    });
+  }
   saveAll(); closeAddToGoal(); renderAll();
-  toast('✓ เพิ่ม ฿'+fmt(amt)+' ใน '+g.name);
+  toast('✓ เพิ่ม ฿'+fmt(amt)+' ใน '+g.name + (recordAsExpense?' · บันทึกเป็นค่าใช้จ่าย':''));
 }
 
 // ── Transactions ──
@@ -3039,7 +3397,7 @@ function closeBackupIfBg(e){ if(e.target===e.currentTarget) closeBackupManager()
 function exportJSON(){
   const data = {
     version: 1,
-    app: 'Finance',
+    app: 'Fin',
     exportedAt: new Date().toISOString(),
     txs: txs,
     goals: goals,
@@ -3089,11 +3447,77 @@ function exportCSV(){
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
-  toast('✓ ดาวน์โหลด CSV แล้ว');
+  localStorage.setItem('fin_last_backup', new Date().toISOString());
+  const lb = document.getElementById('bmLastBackup');
+  if(lb) lb.textContent = 'สำรองล่าสุด: วันนี้';
+  toast('✓ ดาวน์โหลด CSV แล้ว — เก็บไว้ในที่ปลอดภัย');
 }
 
 function triggerImport(){
   document.getElementById('bmFileInput').click();
+}
+
+// Parse a CSV line considering quoted fields with commas
+function parseCSVLine(line){
+  const result = [];
+  let current = '';
+  let inQuotes = false;
+  for(let i=0; i<line.length; i++){
+    const ch = line[i];
+    if(ch === '"'){
+      if(inQuotes && line[i+1] === '"'){
+        current += '"';
+        i++;
+      } else {
+        inQuotes = !inQuotes;
+      }
+    } else if(ch === ',' && !inQuotes){
+      result.push(current);
+      current = '';
+    } else {
+      current += ch;
+    }
+  }
+  result.push(current);
+  return result;
+}
+
+function parseCSV(text){
+  // Remove BOM if present
+  if(text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+  const lines = text.split(/\r?\n/).filter(l=>l.trim());
+  if(lines.length < 2) return null;
+  const headers = parseCSVLine(lines[0]).map(h=>h.trim());
+  const rows = [];
+  for(let i=1; i<lines.length; i++){
+    const cells = parseCSVLine(lines[i]);
+    const obj = {};
+    headers.forEach((h, idx)=>{
+      obj[h] = cells[idx] !== undefined ? cells[idx].trim() : '';
+    });
+    rows.push(obj);
+  }
+  return {headers, rows};
+}
+
+function csvRowToTx(row){
+  // Map CSV columns to transaction object
+  const sources = paymentSources.reduce((m,s)=>{m[s.name.toLowerCase()] = s.id; return m;}, {});
+  const sourceName = (row['Source']||'').toLowerCase();
+  const sourceId = sources[sourceName] || 'cash';
+  return {
+    id: 't'+Date.now()+Math.random().toString(36).slice(2,6),
+    type: (row['Type']||'expense').toLowerCase(),
+    name: row['Name']||'',
+    amount: parseFloat(row['Amount'])||0,
+    category: row['Category']||'อื่นๆ',
+    date: row['Date']||new Date().toISOString().slice(0,10),
+    due: row['Due']||'',
+    status: (row['Status']||'paid').toLowerCase(),
+    note: row['Note']||'',
+    isRecurring: (row['Recurring']||'').toLowerCase()==='yes',
+    paymentSource: sourceId
+  };
 }
 
 function handleImportFile(e){
@@ -3102,44 +3526,49 @@ function handleImportFile(e){
   const reader = new FileReader();
   reader.onload = function(ev){
     try {
-      const data = JSON.parse(ev.target.result);
-      if(!data || (!data.txs && !data.goals)){
-        toast('⚠️ ไฟล์ไม่ถูกต้อง'); return;
+      const parsed = parseCSV(ev.target.result);
+      if(!parsed || !parsed.rows.length){
+        toast('⚠️ ไฟล์ว่างหรือไม่ถูกต้อง');
+        e.target.value = '';
+        return;
       }
-      // Show confirmation with summary
-      const summary = (data.txs?data.txs.length:0)+' รายการ, '+(data.goals?data.goals.length:0)+' เป้าหมาย, '+(data.shortcuts?data.shortcuts.filter(s=>s).length:0)+' ปุ่มลัด';
+      // Validate headers
+      const required = ['Type','Name','Amount','Date'];
+      const missing = required.filter(h=>parsed.headers.indexOf(h)===-1);
+      if(missing.length){
+        toast('⚠️ ไฟล์ต้องมีคอลัมน์: '+missing.join(', '));
+        e.target.value = '';
+        return;
+      }
+
+      const newTxs = parsed.rows.map(csvRowToTx).filter(t=>t.name);
+      if(!newTxs.length){
+        toast('⚠️ ไม่พบรายการที่ถูกต้อง');
+        e.target.value = '';
+        return;
+      }
+
       const mode = confirm(
-        'พบข้อมูล: '+summary+'\n\n' +
+        'พบ '+newTxs.length+' รายการ\n\n' +
         '👉 กด OK = แทนที่ข้อมูลทั้งหมด (ของเดิมจะหาย!)\n' +
         '👉 กด Cancel = รวมกับข้อมูลที่มี (เพิ่มเข้าไป)'
       );
       if(mode){
-        // Replace
-        if(!confirm('⚠️ ยืนยัน! ข้อมูลปัจจุบันจะถูกแทนที่ทั้งหมด')){ e.target.value = ''; return; }
-        if(data.txs) txs = data.txs;
-        if(data.goals) goals = data.goals;
-        if(data.shortcuts) shortcuts = data.shortcuts;
-        if(data.paymentSources) paymentSources = data.paymentSources;
-        toast('✓ นำเข้าข้อมูลและแทนที่แล้ว');
+        if(!confirm('⚠️ ยืนยัน! รายการปัจจุบันทั้งหมดจะถูกแทนที่')){ e.target.value = ''; return; }
+        txs = newTxs;
+        toast('✓ นำเข้า '+newTxs.length+' รายการ (แทนที่แล้ว)');
       } else {
-        // Merge — add IDs if missing, prevent dup by ID
-        const existingIds = txs.map(t=>t.id);
+        // Merge — กัน duplicate ด้วย date+name+amount
+        const existingKeys = txs.map(t=>t.date+'|'+t.name+'|'+t.amount);
         let added = 0;
-        if(data.txs){
-          data.txs.forEach(t=>{
-            const newId = t.id || ('t'+Date.now()+Math.random().toString(36).slice(2,6));
-            if(existingIds.indexOf(newId)===-1){
-              txs.push(Object.assign({}, t, {id: newId}));
-              added++;
-            }
-          });
-        }
-        const existGoalIds = goals.map(g=>g.id);
-        if(data.goals){
-          data.goals.forEach(g=>{
-            if(existGoalIds.indexOf(g.id)===-1) goals.push(g);
-          });
-        }
+        newTxs.forEach(t=>{
+          const key = t.date+'|'+t.name+'|'+t.amount;
+          if(existingKeys.indexOf(key)===-1){
+            txs.push(t);
+            existingKeys.push(key);
+            added++;
+          }
+        });
         toast('✓ รวมข้อมูลแล้ว — เพิ่ม '+added+' รายการ');
       }
       saveAll();
@@ -3148,7 +3577,7 @@ function handleImportFile(e){
     } catch(err){
       toast('⚠️ อ่านไฟล์ไม่สำเร็จ: '+err.message);
     }
-    e.target.value = ''; // reset
+    e.target.value = '';
   };
   reader.readAsText(file);
 }
