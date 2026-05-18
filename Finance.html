@@ -1158,7 +1158,7 @@ tbody td { padding: 12px 16px; vertical-align: middle; }
 <div class="onb-backdrop" id="onbBackdrop">
   <div class="onb">
     <div class="onb-emoji">✨</div>
-    <div class="onb-title">Fin<br/>ฟินทุกบาท</div>
+    <div class="onb-title">Fin<br/>Fin your finances</div>
     <div class="onb-text">จัดการเงินให้ชัด รู้ทุกบาทที่ใช้ไป<br/>เห็นเส้นทางสู่อิสรภาพทางการเงิน</div>
     <div class="onb-features">
       <div class="onb-feat"><div class="onb-feat-icon">⚡</div><div class="onb-feat-text"><b>บันทึกเร็ว</b> — เพิ่มรายการได้ใน 3 วินาที</div></div>
@@ -2052,7 +2052,13 @@ function renderLoans(){
   if(ltbTotal)   ltbTotal.textContent   = '฿'+fmt(totalRemain);
   if(ltbPaid)    ltbPaid.textContent    = '฿'+fmt(totalPaid);
   if(ltbMonthly) ltbMonthly.textContent = '฿'+fmt(totalMonthly);
-  if(ltbFreedom) ltbFreedom.textContent = maxMonths>0 ? maxMonths+' เดือน' : loans.length?'🎉 หมดหนี้':'—';
+  const anyRemaining = loans.some(l=>(l.remaining||0)>0);
+  const allDone      = loans.length > 0 && !anyRemaining;
+  if(ltbFreedom){
+    if(maxMonths > 0)   ltbFreedom.textContent = maxMonths+' เดือน';
+    else if(allDone)    ltbFreedom.textContent = '🎉 หมดหนี้';
+    else                ltbFreedom.textContent = '—';
+  }
   const badge = document.getElementById('loanTotalBadge');
   if(badge) badge.textContent = loans.length ? loans.length+' รายการ · หนี้รวม ฿'+fmt(totalRemain) : '';
 
