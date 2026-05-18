@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#f5f2ed">
-<title>Fin — บันทึกการเงิน</title>
+<title>Fin — ฟินทุกบาท</title>
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Serif+Display:wght@300;400;500&family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -425,6 +425,113 @@ body {
 .source-card.credit { background: var(--red-bg); border-color: var(--red-br); border-left-color: var(--red); }
 .source-card.credit .source-card-amt { color: var(--red); }
 .source-card.cash .source-card-amt { color: var(--green); }
+
+/* ── Loan Manager ── */
+.loans-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 14px; flex-wrap: wrap; gap: 10px;
+}
+.loans-total-bar {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 16px 20px;
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
+  margin-bottom: 14px;
+  box-shadow: var(--shadow);
+}
+.ltb-item { text-align: center; }
+.ltb-label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600; margin-bottom: 4px; }
+.ltb-val { font-family: 'IBM Plex Mono', monospace; font-size: 17px; font-weight: 600; }
+.ltb-val.debt { color: var(--red); }
+.ltb-val.paid { color: var(--green); }
+.ltb-val.months { color: var(--amber); }
+.ltb-val.interest { color: var(--purple); }
+
+.loans-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 12px; }
+.loan-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 18px 20px;
+  position: relative; overflow: hidden;
+  transition: all 0.2s;
+}
+.loan-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+.loan-card::before {
+  content: ''; position: absolute; top: 0; left: 0;
+  width: 100%; height: 3px;
+}
+.loan-card.type-credit::before { background: var(--red); }
+.loan-card.type-personal::before { background: var(--amber); }
+.loan-card.type-family::before { background: var(--blue); }
+.loan-card.type-other::before { background: var(--purple); }
+.loan-card.done { opacity: 0.65; }
+.loan-card.done::before { background: var(--green); }
+
+.loan-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; }
+.loan-name { font-size: 15px; font-weight: 600; color: var(--text); }
+.loan-source { font-size: 11px; color: var(--text3); margin-top: 2px; }
+.loan-type-badge {
+  font-size: 10px; font-weight: 600; padding: 3px 9px;
+  border-radius: 12px; letter-spacing: 0.04em;
+  flex-shrink: 0;
+}
+.loan-type-badge.credit { background: var(--red-bg); color: var(--red); }
+.loan-type-badge.personal { background: var(--amber-bg); color: var(--amber); }
+.loan-type-badge.family { background: var(--blue-bg); color: var(--blue); }
+.loan-type-badge.other { background: var(--purple-bg); color: var(--purple); }
+.loan-type-badge.done { background: var(--green-bg); color: var(--green); }
+
+.loan-amounts { display: flex; justify-content: space-between; margin-bottom: 10px; }
+.loan-remain { font-family: 'IBM Plex Mono', monospace; font-size: 22px; font-weight: 600; color: var(--red); line-height: 1; }
+.loan-remain.done { color: var(--green); }
+.loan-original { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--text3); margin-top: 4px; }
+.loan-bar-wrap { height: 6px; background: var(--bg2); border-radius: 3px; overflow: hidden; margin-bottom: 10px; }
+.loan-bar-fill {
+  height: 100%; border-radius: 3px;
+  background: linear-gradient(90deg, var(--green), var(--accent2));
+  transition: width 0.8s cubic-bezier(0.4,0,0.2,1);
+}
+
+.loan-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+.loan-meta-item { background: var(--bg2); border-radius: var(--rs); padding: 8px 10px; }
+.loan-meta-label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; margin-bottom: 2px; }
+.loan-meta-val { font-family: 'IBM Plex Mono', monospace; font-size: 14px; font-weight: 500; color: var(--text); }
+
+.loan-actions { display: flex; gap: 6px; }
+.loan-pay-btn {
+  flex: 1; background: var(--green); border: none; color: #fff;
+  border-radius: var(--rs); padding: 9px; font-size: 13px; font-weight: 600;
+  cursor: pointer; font-family: 'Sarabun', sans-serif;
+  transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 5px;
+}
+.loan-pay-btn:hover { background: var(--accent2); transform: translateY(-1px); }
+.loan-pay-btn:disabled { background: var(--border); color: var(--text3); cursor: default; transform: none; }
+.loan-edit-btn { background: none; border: 1px solid var(--border); color: var(--text3); border-radius: var(--rs); padding: 9px 12px; cursor: pointer; transition: all 0.15s; }
+.loan-edit-btn:hover { background: var(--bg2); color: var(--text); }
+.loan-del-btn { background: none; border: 1px solid var(--border); color: var(--text3); border-radius: var(--rs); padding: 9px 12px; cursor: pointer; transition: all 0.15s; }
+.loan-del-btn:hover { background: var(--red-bg); color: var(--red); border-color: var(--red-br); }
+
+/* History chip */
+.loan-history { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
+.loan-history-label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600; margin-bottom: 6px; }
+.loan-history-list { display: flex; flex-direction: column; gap: 4px; max-height: 80px; overflow-y: auto; }
+.loan-history-item { display: flex; justify-content: space-between; font-size: 11px; color: var(--text2); padding: 3px 0; border-bottom: 1px solid var(--border); }
+.loan-history-item:last-child { border-bottom: none; }
+.loan-history-amt { font-family: 'IBM Plex Mono', monospace; color: var(--green); font-weight: 500; }
+
+/* Add loan button */
+.btn-add-loan {
+  background: none; border: 1.5px dashed var(--border2);
+  border-radius: var(--r); padding: 24px; text-align: center;
+  color: var(--text3); font-size: 13px; cursor: pointer;
+  transition: all 0.2s; width: 100%; font-family: 'Sarabun', sans-serif; font-weight: 500;
+}
+.btn-add-loan:hover { background: var(--surface); border-color: var(--red); color: var(--red); }
+
+/* Interest calculator hint */
+.interest-hint {
+  background: var(--amber-bg); border: 1px solid var(--amber-br);
+  border-radius: var(--rs); padding: 8px 12px; font-size: 11px; color: var(--amber);
+  margin-top: 6px; line-height: 1.5;
+}
 
 /* ── Debt Freedom Path ── */
 .freedom-card {
@@ -1068,7 +1175,7 @@ tbody td { padding: 12px 16px; vertical-align: middle; }
   <div class="header">
     <div class="brand">
       <div class="brand-title">Fin</div>
-      <div class="brand-sub">Fin your finances</div>
+      <div class="brand-sub">ฟินทุกบาท</div>
     </div>
     <div class="header-tools">
       <div class="month-bar">
@@ -1222,6 +1329,37 @@ tbody td { padding: 12px 16px; vertical-align: middle; }
   <!-- Borrowed Money Alert -->
   <div id="borrowedAlert" class="alert" style="display:none;margin-top:8px;background:linear-gradient(135deg,var(--amber-bg),var(--red-bg));border-color:var(--amber-br);color:var(--amber)"></div>
 
+  <!-- 💳 Loan Manager -->
+  <div class="section-title" style="margin-top:32px">
+    สินเชื่อ / หนี้ทั้งหมด
+    <span class="st-extra" id="loanTotalBadge"></span>
+  </div>
+
+  <!-- Summary bar -->
+  <div class="loans-total-bar" id="loanTotalBar">
+    <div class="ltb-item">
+      <div class="ltb-label">หนี้รวมทั้งหมด</div>
+      <div class="ltb-val debt mono" id="ltbTotal">฿0</div>
+    </div>
+    <div class="ltb-item">
+      <div class="ltb-label">ผ่อนไปแล้ว</div>
+      <div class="ltb-val paid mono" id="ltbPaid">฿0</div>
+    </div>
+    <div class="ltb-item">
+      <div class="ltb-label">งวดรวม/เดือน</div>
+      <div class="ltb-val months mono" id="ltbMonthly">฿0</div>
+    </div>
+    <div class="ltb-item">
+      <div class="ltb-label">คาดปลดหนี้</div>
+      <div class="ltb-val months mono" id="ltbFreedom">—</div>
+    </div>
+  </div>
+
+  <div class="loans-grid" id="loansGrid"></div>
+  <div style="margin-top:10px">
+    <button class="btn-add-loan" onclick="openLoanModal()">+ เพิ่มสินเชื่อ / บันทึกหนี้</button>
+  </div>
+
   <!-- 🎯 Debt Freedom Path -->
   <div class="section-title">เส้นทางสู่อิสรภาพทางการเงิน</div>
   <div class="freedom-card" id="freedomCard">
@@ -1370,6 +1508,124 @@ tbody td { padding: 12px 16px; vertical-align: middle; }
 
 <!-- FAB -->
 <button class="fab" onclick="openTxModal()" title="เพิ่มรายการแบบละเอียด">+</button>
+
+<!-- ── Loan Modal ── -->
+<div class="backdrop" id="loanBackdrop" onclick="closeLoanIfBg(event)">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-head">
+      <div class="modal-title" id="loanModalTitle">บันทึกสินเชื่อ / หนี้</div>
+      <button class="modal-x" onclick="closeLoanModal()">✕</button>
+    </div>
+
+    <div class="fg"><label class="fl">ชื่อสินเชื่อ / เจ้าหนี้</label>
+      <input class="fi" id="lnName" placeholder="เช่น True Paynext Extra, บัตร KTC, ยืมเพื่อน A"/>
+    </div>
+
+    <div class="fg">
+      <label class="fl">ประเภท</label>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px" id="lnTypeRow">
+        <button class="type-btn on" id="lnTypeCredit" onclick="setLoanType('credit')" style="font-size:12px">💳 สินเชื่อ</button>
+        <button class="type-btn" id="lnTypePersonal" onclick="setLoanType('personal')" style="font-size:12px">📱 PayNext</button>
+        <button class="type-btn" id="lnTypeFamily" onclick="setLoanType('family')" style="font-size:12px">👨‍👩‍👧 ยืมคน</button>
+        <button class="type-btn" id="lnTypeOther" onclick="setLoanType('other')" style="font-size:12px">📋 อื่นๆ</button>
+      </div>
+    </div>
+
+    <div class="frow">
+      <div class="fg">
+        <label class="fl">ยอดต้น (ยืมมาทั้งหมด)</label>
+        <input class="fi mono" id="lnPrincipal" type="number" step="0.01" placeholder="0.00" oninput="updateLoanCalc()"/>
+      </div>
+      <div class="fg">
+        <label class="fl">ยอดคงเหลือปัจจุบัน</label>
+        <input class="fi mono" id="lnRemaining" type="number" step="0.01" placeholder="0.00" oninput="updateLoanCalc()"/>
+      </div>
+    </div>
+
+    <div class="frow">
+      <div class="fg">
+        <label class="fl">ผ่อนต่อเดือน (งวด)</label>
+        <input class="fi mono" id="lnMonthly" type="number" step="0.01" placeholder="0.00" oninput="updateLoanCalc()"/>
+      </div>
+      <div class="fg">
+        <label class="fl">ดอกเบี้ย % ต่อปี (ถ้ามี)</label>
+        <input class="fi mono" id="lnInterest" type="number" step="0.01" placeholder="เช่น 18" oninput="updateLoanCalc()"/>
+      </div>
+    </div>
+
+    <div class="frow">
+      <div class="fg">
+        <label class="fl">วันตัดยอดทุกเดือน</label>
+        <input class="fi" id="lnDueDay" type="number" min="1" max="31" placeholder="เช่น 5, 15, 25"/>
+      </div>
+      <div class="fg">
+        <label class="fl">จ่ายผ่าน</label>
+        <select class="fs" id="lnSource"></select>
+      </div>
+    </div>
+
+    <div class="fg"><label class="fl">หมายเหตุ</label>
+      <input class="fi" id="lnNote" placeholder="รายละเอียดเพิ่มเติม เช่น ดอกเบี้ย 1.5%/เดือน"/>
+    </div>
+
+    <!-- Loan Calculator hint -->
+    <div class="interest-hint" id="loanCalcHint" style="display:none"></div>
+
+    <div class="modal-foot">
+      <button class="btn-cancel" id="lnDelBtn" onclick="deleteLoan()" style="display:none;color:var(--red);border-color:var(--red-br)">🗑 ลบ</button>
+      <button class="btn-cancel" onclick="closeLoanModal()">ยกเลิก</button>
+      <button class="btn-ok" onclick="saveLoan()">บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Pay Loan Modal ── -->
+<div class="backdrop" id="payLoanBackdrop" onclick="closePayLoanIfBg(event)">
+  <div class="modal" style="max-width:440px">
+    <div class="modal-head">
+      <div class="modal-title">ตัดชำระ</div>
+      <button class="modal-x" onclick="closePayLoan()">✕</button>
+    </div>
+    <div style="background:var(--bg2);border-radius:var(--rs);padding:12px 14px;margin-bottom:14px">
+      <div style="font-size:13px;font-weight:600;color:var(--text)" id="payLoanName">—</div>
+      <div style="display:flex;justify-content:space-between;margin-top:8px">
+        <span style="font-size:12px;color:var(--text3)">ยอดคงเหลือก่อนชำระ</span>
+        <span class="mono" style="font-size:14px;color:var(--red);font-weight:600" id="payLoanRemain">฿0</span>
+      </div>
+    </div>
+
+    <div class="fg">
+      <label class="fl">จำนวนที่ชำระ (บาท)</label>
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px">
+        <input class="fi mono" id="payLoanAmt" type="number" step="0.01" placeholder="0.00" style="flex:1" oninput="updatePayHint()"/>
+        <button class="btn-copy" onclick="fillMonthlyPayment()" style="flex-shrink:0;white-space:nowrap;font-size:12px">งวดปกติ</button>
+      </div>
+      <div id="payHint" style="font-size:11px;color:var(--text3)"></div>
+    </div>
+
+    <div class="fg">
+      <label class="fl">วันที่ชำระ</label>
+      <input class="fi" id="payLoanDate" type="date"/>
+    </div>
+
+    <div class="fg">
+      <label class="fl">จ่ายผ่าน</label>
+      <select class="fs" id="payLoanSource"></select>
+    </div>
+
+    <div class="fg" style="background:var(--green-bg);border:1px solid var(--green-br);border-radius:var(--rs);padding:10px 12px">
+      <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px;color:var(--text);font-weight:500">
+        <input type="checkbox" id="payCreateTx" checked style="width:18px;height:18px;accent-color:var(--accent)"/>
+        <span>💸 บันทึกเป็นรายจ่ายของเดือนนี้ด้วย</span>
+      </label>
+    </div>
+
+    <div class="modal-foot">
+      <button class="btn-cancel" onclick="closePayLoan()">ยกเลิก</button>
+      <button class="btn-ok" onclick="doPayLoan()">ตัดชำระ ✓</button>
+    </div>
+  </div>
+</div>
 
 <!-- ── Backup Manager Modal ── -->
 <div class="backdrop" id="backupBackdrop" onclick="closeBackupIfBg(event)">
@@ -1744,6 +2000,7 @@ const PRESETS = {
 
 let txs   = JSON.parse(localStorage.getItem('fin_tx')   || 'null');
 let goals = JSON.parse(localStorage.getItem('fin_goals') || '[]');
+let loans = JSON.parse(localStorage.getItem('fin_loans') || '[]');
 let theme = localStorage.getItem('fin_theme') || 'light';
 let onbDone = localStorage.getItem('fin_onb') === '1';
 
@@ -1764,6 +2021,302 @@ let editingSourceId = null;
 function getSource(id){
   return paymentSources.find(s=>s.id===id) || paymentSources[0];
 }
+
+// ── 💳 Loan Manager ──
+let editingLoanId = null;
+let payingLoanId  = null;
+let loanType = 'credit';
+
+const LOAN_TYPES = {
+  credit:   { label:'💳 สินเชื่อ',   cls:'credit'   },
+  personal: { label:'📱 PayNext/แอป', cls:'personal'  },
+  family:   { label:'👨‍👩‍👧 ยืมคน',      cls:'family'   },
+  other:    { label:'📋 อื่นๆ',       cls:'other'    }
+};
+
+function renderLoans(){
+  const grid = document.getElementById('loansGrid');
+  if(!grid) return;
+
+  // Summary bar
+  const totalRemain  = loans.reduce((s,l)=>s+(l.remaining||0), 0);
+  const totalPaid    = loans.reduce((s,l)=>s+((l.principal||0)-(l.remaining||0)), 0);
+  const totalMonthly = loans.filter(l=>(l.remaining||0)>0).reduce((s,l)=>s+(l.monthly||0), 0);
+  const maxMonths    = loans.filter(l=>(l.remaining||0)>0 && (l.monthly||0)>0)
+    .reduce((mx,l)=>{ const m=Math.ceil(l.remaining/l.monthly); return m>mx?m:mx; }, 0);
+
+  const ltbTotal   = document.getElementById('ltbTotal');
+  const ltbPaid    = document.getElementById('ltbPaid');
+  const ltbMonthly = document.getElementById('ltbMonthly');
+  const ltbFreedom = document.getElementById('ltbFreedom');
+  if(ltbTotal)   ltbTotal.textContent   = '฿'+fmt(totalRemain);
+  if(ltbPaid)    ltbPaid.textContent    = '฿'+fmt(totalPaid);
+  if(ltbMonthly) ltbMonthly.textContent = '฿'+fmt(totalMonthly);
+  if(ltbFreedom) ltbFreedom.textContent = maxMonths>0 ? maxMonths+' เดือน' : loans.length?'🎉 หมดหนี้':'—';
+  const badge = document.getElementById('loanTotalBadge');
+  if(badge) badge.textContent = loans.length ? loans.length+' รายการ · หนี้รวม ฿'+fmt(totalRemain) : '';
+
+  if(!loans.length){
+    grid.innerHTML = '';
+    return;
+  }
+
+  grid.innerHTML = loans.map(l=>{
+    const remain  = l.remaining || 0;
+    const principal = l.principal || 0;
+    const paid    = Math.max(0, principal - remain);
+    const pct     = principal > 0 ? Math.min(100, Math.round(paid/principal*100)) : 0;
+    const done    = remain <= 0;
+    const t       = LOAN_TYPES[l.type] || LOAN_TYPES.credit;
+    const src     = getSource(l.source||'cash');
+    const moLeft  = (l.monthly||0)>0 && remain>0 ? Math.ceil(remain/l.monthly) : 0;
+
+    // Monthly interest estimate
+    let interestNote = '';
+    if(l.interest > 0 && remain > 0){
+      const monthlyInterest = remain * (l.interest/100/12);
+      interestNote = '<div class="loan-meta-item"><div class="loan-meta-label">ดอกเบี้ย/เดือน (ประมาณ)</div><div class="loan-meta-val" style="color:var(--red)">฿'+fmt(monthlyInterest)+'</div></div>';
+    }
+
+    // Recent payments
+    const history = (l.payments||[]).slice(-3).reverse();
+    const histHtml = history.length ? `
+      <div class="loan-history">
+        <div class="loan-history-label">ชำระล่าสุด</div>
+        <div class="loan-history-list">
+          ${history.map(p=>`<div class="loan-history-item"><span>${thDate(p.date)}</span><span class="loan-history-amt">-฿${fmt(p.amount)}</span></div>`).join('')}
+        </div>
+      </div>` : '';
+
+    return `<div class="loan-card type-${t.cls}${done?' done':''}">
+      <div class="loan-head">
+        <div>
+          <div class="loan-name">${esc(l.name)}</div>
+          <div class="loan-source">${src.icon} ${esc(src.name)}${l.dueDay?' · ตัดวันที่ '+l.dueDay+' ทุกเดือน':''}</div>
+        </div>
+        <span class="loan-type-badge ${done?'done':t.cls}">${done?'✅ หมดแล้ว':t.label}</span>
+      </div>
+
+      <div class="loan-amounts">
+        <div>
+          <div class="loan-remain${done?' done':''}">฿${fmt(remain)}</div>
+          <div class="loan-original">จากยอดต้น ฿${fmt(principal)}</div>
+        </div>
+        <div style="text-align:right;font-size:12px;color:var(--text3)">
+          <div>ผ่อนไป ${pct}%</div>
+          <div class="mono" style="font-size:11px;margin-top:2px">฿${fmt(paid)}</div>
+        </div>
+      </div>
+      <div class="loan-bar-wrap"><div class="loan-bar-fill" style="width:${pct}%"></div></div>
+
+      <div class="loan-meta">
+        <div class="loan-meta-item">
+          <div class="loan-meta-label">งวด/เดือน</div>
+          <div class="loan-meta-val">฿${fmt(l.monthly||0)}</div>
+        </div>
+        <div class="loan-meta-item">
+          <div class="loan-meta-label">คาดปลดหนี้</div>
+          <div class="loan-meta-val" style="color:var(--amber)">${moLeft>0?moLeft+' เดือน':done?'หมดแล้ว':'—'}</div>
+        </div>
+        ${interestNote}
+        ${l.note?`<div class="loan-meta-item" style="grid-column:1/-1"><div class="loan-meta-label">หมายเหตุ</div><div style="font-size:12px;color:var(--text2)">${esc(l.note)}</div></div>`:''}
+      </div>
+
+      <div class="loan-actions">
+        <button class="loan-pay-btn" onclick="openPayLoan('${l.id}')" ${done?'disabled':''}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          ${done?'ปลดหนี้แล้ว':'ตัดชำระ'}
+        </button>
+        <button class="loan-edit-btn" onclick="openLoanModal('${l.id}')" title="แก้ไข">✎</button>
+        <button class="loan-del-btn" onclick="deleteLoan('${l.id}')" title="ลบ">✕</button>
+      </div>
+      ${histHtml}
+    </div>`;
+  }).join('');
+}
+
+// ── Loan Modal (Add/Edit) ──
+function openLoanModal(id){
+  editingLoanId = id || null;
+  const l = id ? loans.find(x=>x.id===id) : null;
+  document.getElementById('loanModalTitle').textContent = id ? 'แก้ไขสินเชื่อ' : 'บันทึกสินเชื่อ / หนี้';
+  setLoanType(l ? l.type : 'credit');
+  document.getElementById('lnName').value      = l ? l.name      : '';
+  document.getElementById('lnPrincipal').value = l ? l.principal : '';
+  document.getElementById('lnRemaining').value = l ? l.remaining : '';
+  document.getElementById('lnMonthly').value   = l ? l.monthly   : '';
+  document.getElementById('lnInterest').value  = l ? (l.interest||'') : '';
+  document.getElementById('lnDueDay').value    = l ? (l.dueDay||'') : '';
+  document.getElementById('lnNote').value      = l ? (l.note||'')  : '';
+  document.getElementById('lnDelBtn').style.display = id ? '' : 'none';
+  populateSourceSelect('lnSource');
+  if(l && l.source) document.getElementById('lnSource').value = l.source;
+  updateLoanCalc();
+  document.getElementById('loanBackdrop').classList.add('open');
+  setTimeout(()=>document.getElementById('lnName').focus(), 100);
+}
+
+function setLoanType(t){
+  loanType = t;
+  ['credit','personal','family','other'].forEach(k=>{
+    const btn = document.getElementById('lnType'+k.charAt(0).toUpperCase()+k.slice(1));
+    if(!btn) return;
+    btn.className = 'type-btn' + (k===t ? ' '+k+' on' : '');
+  });
+}
+
+function updateLoanCalc(){
+  const remain   = parseFloat(document.getElementById('lnRemaining').value)||0;
+  const monthly  = parseFloat(document.getElementById('lnMonthly').value)||0;
+  const interest = parseFloat(document.getElementById('lnInterest').value)||0;
+  const hint     = document.getElementById('loanCalcHint');
+  if(!hint) return;
+  if(remain>0 && monthly>0){
+    const months = Math.ceil(remain/monthly);
+    let txt = '📅 ถ้าผ่อน ฿'+fmt(monthly)+'/เดือน จะหมดใน '+months+' เดือน (~'+(months/12).toFixed(1)+' ปี)';
+    if(interest>0){
+      const monthlyRate = interest/100/12;
+      const totalInterest = remain * monthlyRate * months;
+      txt += ' · ดอกเบี้ยรวมประมาณ ฿'+fmt(totalInterest);
+    }
+    hint.style.display = '';
+    hint.textContent = txt;
+  } else {
+    hint.style.display = 'none';
+  }
+}
+
+function saveLoan(){
+  const name      = document.getElementById('lnName').value.trim();
+  const principal = parseFloat(document.getElementById('lnPrincipal').value)||0;
+  let   remaining = parseFloat(document.getElementById('lnRemaining').value);
+  const monthly   = parseFloat(document.getElementById('lnMonthly').value)||0;
+  const interest  = parseFloat(document.getElementById('lnInterest').value)||0;
+  const dueDay    = parseInt(document.getElementById('lnDueDay').value)||0;
+  const source    = document.getElementById('lnSource').value;
+  const note      = document.getElementById('lnNote').value.trim();
+  if(!name){ toast('⚠️ กรุณากรอกชื่อ'); return; }
+  if(isNaN(remaining)) remaining = principal; // default remaining = principal
+  const obj = { name, type: loanType, principal, remaining, monthly, interest, dueDay, source, note };
+  if(editingLoanId){
+    const i = loans.findIndex(x=>x.id===editingLoanId);
+    loans[i] = Object.assign({}, loans[i], obj);
+    toast('✓ แก้ไขสินเชื่อแล้ว');
+  } else {
+    loans.push(Object.assign({}, obj, { id:'l'+Date.now(), payments: [] }));
+    toast('✓ บันทึกสินเชื่อแล้ว');
+  }
+  saveAll(); closeLoanModal(); renderLoans();
+}
+
+function deleteLoan(id){
+  const targetId = id || editingLoanId;
+  if(!targetId) return;
+  const l = loans.find(x=>x.id===targetId);
+  if(!confirm('ลบสินเชื่อ "'+l.name+'"?')) return;
+  loans = loans.filter(x=>x.id!==targetId);
+  saveAll(); closeLoanModal(); renderLoans();
+  toast('ลบแล้ว');
+}
+
+function closeLoanModal(){ document.getElementById('loanBackdrop').classList.remove('open'); }
+function closeLoanIfBg(e){ if(e.target===e.currentTarget) closeLoanModal(); }
+
+// ── Pay Loan ──
+function openPayLoan(id){
+  payingLoanId = id;
+  const l = loans.find(x=>x.id===id);
+  if(!l) return;
+  const nameEl   = document.getElementById('payLoanName');
+  const remainEl = document.getElementById('payLoanRemain');
+  const amtEl    = document.getElementById('payLoanAmt');
+  const dateEl   = document.getElementById('payLoanDate');
+  if(nameEl)   nameEl.textContent   = l.name;
+  if(remainEl) remainEl.textContent = '฿'+fmt(l.remaining);
+  if(amtEl)    amtEl.value          = l.monthly > 0 ? l.monthly : '';
+  const today = new Date();
+  if(dateEl) dateEl.value = today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0');
+  populateSourceSelect('payLoanSource');
+  const srcEl = document.getElementById('payLoanSource');
+  if(srcEl && l.source) srcEl.value = l.source;
+  updatePayHint();
+  document.getElementById('payLoanBackdrop').classList.add('open');
+  setTimeout(()=>{ const a=document.getElementById('payLoanAmt'); if(a) a.focus(); }, 100);
+}
+
+function fillMonthlyPayment(){
+  const l = loans.find(x=>x.id===payingLoanId);
+  if(l && l.monthly) document.getElementById('payLoanAmt').value = l.monthly;
+  updatePayHint();
+}
+
+function updatePayHint(){
+  const l   = loans.find(x=>x.id===payingLoanId);
+  if(!l) return;
+  const amt = parseFloat(document.getElementById('payLoanAmt').value)||0;
+  const hint = document.getElementById('payHint');
+  if(!hint) return;
+  if(amt > 0 && l.remaining > 0){
+    const after = Math.max(0, l.remaining - amt);
+    if(after <= 0){
+      hint.style.color = 'var(--green)';
+      hint.textContent = '🎉 ชำระครั้งนี้จะปลดหนี้รายการนี้ได้เลย!';
+    } else {
+      const moLeft = l.monthly > 0 ? Math.ceil(after/l.monthly) : 0;
+      hint.style.color = 'var(--text3)';
+      hint.textContent = 'คงเหลือหลังชำระ ฿'+fmt(after)+(moLeft>0?' · อีก '+moLeft+' งวดจะหมด':'');
+    }
+  } else {
+    hint.textContent = '';
+  }
+}
+
+function doPayLoan(){
+  const amt  = parseFloat(document.getElementById('payLoanAmt').value)||0;
+  const date = document.getElementById('payLoanDate').value;
+  const src  = document.getElementById('payLoanSource').value;
+  const createTx = document.getElementById('payCreateTx').checked;
+  if(amt <= 0){ toast('⚠️ กรอกจำนวน'); return; }
+  if(!date){ toast('⚠️ กรอกวันที่'); return; }
+  const l = loans.find(x=>x.id===payingLoanId);
+  const before = l.remaining;
+  l.remaining = Math.max(0, l.remaining - amt);
+  if(!l.payments) l.payments = [];
+  l.payments.push({ date, amount: amt, before, after: l.remaining });
+
+  // สร้าง expense transaction
+  if(createTx){
+    const p = period();
+    const d = new Date(date);
+    // ใช้ date ที่เลือก แต่ต้องอยู่ในเดือนที่ดูอยู่ถ้าต่างกันจะยังบันทึกตามวันจริง
+    txs.push({
+      id:'t'+Date.now(),
+      type:'expense',
+      name:'💳 ผ่อน '+l.name,
+      amount: amt,
+      category:'หนี้/สินเชื่อ',
+      date: date,
+      due: date,
+      status:'paid',
+      note:'ยอดคงเหลือ ฿'+fmt(l.remaining),
+      isRecurring: true,
+      paymentSource: src
+    });
+  }
+  saveAll();
+  closePayLoan();
+  renderLoans();
+  renderAll();
+  const srcObj = getSource(src);
+  if(l.remaining <= 0){
+    toast('🎉 ปลดหนี้ "'+l.name+'" แล้ว!');
+  } else {
+    toast('✓ ตัดชำระ ฿'+fmt(amt)+' · เหลือ ฿'+fmt(l.remaining)+' · '+srcObj.icon+' '+srcObj.name);
+  }
+}
+
+function closePayLoan(){ document.getElementById('payLoanBackdrop').classList.remove('open'); }
+function closePayLoanIfBg(e){ if(e.target===e.currentTarget) closePayLoan(); }
 
 // ── Source Manager ──
 let seType = 'cash';
@@ -1908,6 +2461,7 @@ function saveAll(){
   localStorage.setItem('fin_tx', JSON.stringify(txs));
   localStorage.setItem('fin_goals', JSON.stringify(goals));
   localStorage.setItem('fin_sources', JSON.stringify(paymentSources));
+  localStorage.setItem('fin_loans', JSON.stringify(loans));
 }
 
 // ── Helpers ──
@@ -2012,6 +2566,7 @@ function renderAll(){
   } else ab.style.display='none';
 
   renderFreedom(inc, exp, all, unpaidItems, borrowedIn);
+  renderLoans();
   renderSplit(all);
   renderSourceSummary(all);
   renderInsights(inc, exp, all, borrowedIn);
@@ -3420,9 +3975,10 @@ function exportJSON(){
 }
 
 function exportCSV(){
-  if(!txs.length){ toast('⚠️ ไม่มีรายการให้ export'); return; }
-  const header = 'Type,Name,Amount,Category,Date,Due,Status,Source,Recurring,Note';
-  const rows = txs.map(t=>{
+  if(!txs.length && !loans.length){ toast('⚠️ ไม่มีข้อมูลให้ export'); return; }
+  // Transactions sheet
+  const txHeader = 'Type,Name,Amount,Category,Date,Due,Status,Source,Recurring,Note';
+  const txRows = txs.map(t=>{
     const src = getSource(t.paymentSource||'cash');
     return [
       t.type,
@@ -3437,12 +3993,28 @@ function exportCSV(){
       '"'+(t.note||'').replace(/"/g,'""')+'"'
     ].join(',');
   });
-  const csv = [header].concat(rows).join('\n');
+  // Loans sheet (appended below with separator)
+  const loanHeader = '\n\n=== สินเชื่อ / หนี้ ===\nName,Type,Principal,Remaining,Monthly,Interest%,DueDay,Source,Note';
+  const loanRows = loans.map(l=>{
+    const src = getSource(l.source||'cash');
+    return [
+      '"'+(l.name||'').replace(/"/g,'""')+'"',
+      l.type||'',
+      l.principal||0,
+      l.remaining||0,
+      l.monthly||0,
+      l.interest||0,
+      l.dueDay||'',
+      '"'+src.name+'"',
+      '"'+(l.note||'').replace(/"/g,'""')+'"'
+    ].join(',');
+  });
+  const csv = [txHeader].concat(txRows).join('\n') + loanHeader + '\n' + loanRows.join('\n');
   const blob = new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8'});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = 'finance_'+new Date().toISOString().slice(0,10)+'.csv';
+  a.download = 'fin_backup_'+new Date().toISOString().slice(0,10)+'.csv';
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
@@ -3589,9 +4161,11 @@ function resetAllData(){
   localStorage.removeItem('fin_goals');
   localStorage.removeItem('fin_shortcuts');
   localStorage.removeItem('fin_sources');
+  localStorage.removeItem('fin_loans');
   localStorage.removeItem('fin_last_backup');
   txs = null;
   goals = [];
+  loans = [];
   shortcuts = DEFAULT_SHORTCUTS.slice();
   paymentSources = DEFAULT_SOURCES.slice();
   seed();
@@ -3618,6 +4192,8 @@ document.addEventListener('keydown', e=>{
     closeSourceManager();
     closeSourceEdit();
     closeBackupManager();
+    closeLoanModal();
+    closePayLoan();
   }
 });
 
