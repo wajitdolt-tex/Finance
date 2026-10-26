@@ -65,6 +65,9 @@ nav button.act{color:var(--accent)}
 canvas{width:100%;height:200px;display:block}
 .empty{text-align:center;padding:20px 0;color:var(--muted)}
 a.btn{text-decoration:none;display:inline-block}
+.seg{display:flex;gap:4px;background:var(--card);border-radius:12px;padding:4px;margin-bottom:12px}
+.seg button{flex:1;background:none;border:0;border-radius:9px;padding:9px 6px;color:var(--muted);font:inherit;font-weight:600;cursor:pointer}
+.seg button.on{background:var(--accent);color:#06121f}
 .kv{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-top:1px solid var(--line);font-size:15px}
 .kv:first-child{border-top:0}
 .kv span{color:var(--muted)}
@@ -220,24 +223,47 @@ PAGES.port=function(){
     return '<div class="card"><h2>เริ่มต้นพอร์ต</h2><p class="muted">ยังไม่มีรายการ กดปุ่มด้านล่างเพื่อใส่รายชื่อหุ้น/กองทุนที่ถืออยู่ แล้วค่อยกรอกจำนวน ต้นทุน และราคาทีละตัว</p>'+
     '<div class="row"><button class="btn" onclick="seed()">ใส่พอร์ตจริง (หุ้น 6 ตัว + กองกสิกร 3 กอง)</button><button class="btn ghost" onclick="editH()">+ เพิ่มเอง</button></div></div>';
   }
-  var t=totals(),sec=sectors(),bar='',leg='',uLoss=0,uGain=0;
-  S.h.forEach(function(h){var pl=stat(h).pl;if(pl<0)uLoss+=pl;else uGain+=pl;});
-  sec.forEach(function(s,i){var c=COLORS[i%COLORS.length];bar+='<div style="width:'+s.p+'%;background:'+c+'"></div>';leg+='<span><i class="dot" style="background:'+c+'"></i>'+esc(s.k)+' '+fmt(s.p,0)+'%</span>';});
+  var pf=S.pf||'all',hs=pfList(pf),t=pfTotals(hs),bar='',leg='',uLoss=0,uGain=0;
+  hs.forEach(function(h){var pl=stat(h).pl;if(pl<0)uLoss+=pl;else uGain+=pl;});
+  primeColors();
+  var sm={},sa=[],sk;
+  hs.forEach(function(h){var v=holdVal(h);if(v<=0)return;sk=h.sector||'ไม่ระบุ';sm[sk]=(sm[sk]||0)+v;});
+  for(sk in sm)sa.push({k:sk,p:t.val?sm[sk]/t.val*100:0});
+  sa.sort(function(x,y){return y.p-x.p;});
+  sa.forEach(function(s){var c=secColor(s.k);bar+='<div style="width:'+s.p+'%;background:'+c+'"></div>';leg+='<span><i class="dot" style="background:'+c+'"></i>'+esc(s.k)+' '+fmt(s.p,0)+'%</span>';});
+  var seg='<div class="seg">'+[['all','ทั้งหมด'],['stock','📈 หุ้น'],['fund','🏦 กองทุน']].map(function(x){return '<button class="'+(pf===x[0]?'on':'')+'" onclick="setPf(\''+x[0]+'\')">'+x[1]+'</button>';}).join('')+'</div>';
+  var split='';
+  if(pf==='all'){
+    var ts=pfTotals(pfList('stock')),tf=pfTotals(pfList('fund'));
+    split='<div class="grid" style="grid-template-columns:1fr 1fr;margin:0 0 12px">'+
+     [['stock','📈 หุ้น',ts],['fund','🏦 กองทุน',tf]].map(function(x){var y=x[2];return '<div class="card" style="margin:0;cursor:pointer" onclick="setPf(\''+x[0]+'\')"><div class="muted">'+x[1]+' · '+fmt(t.val?y.val/t.val*100:0,0)+'%</div><b style="font-size:19px">'+fmt(y.val,0)+' ฿</b><div class="'+cls(y.pl)+'" style="font-size:14px">'+sign(y.pl,0)+' ('+sign(y.pct,1)+'%)</div></div>';}).join('')+'</div>';
+  }
+  var title=pf==='stock'?'มูลค่าพอร์ตหุ้น':(pf==='fund'?'มูลค่าพอร์ตกองทุน':'มูลค่าพอร์ตรวม');
   var list='';
-  S.h.forEach(function(h){
+  hs.forEach(function(h){
     var s=stat(h);
     list+='<div class="item" onclick="editH(\''+h.id+'\')"><div><b>'+esc(h.symbol)+'</b><span class="badge">'+(h.type==='fund'?'กองทุน':'หุ้น')+'</span><div class="muted">'+fmt(h.units,h.type==='fund'?4:0)+' @ '+fmt(h.avg_cost,h.type==='fund'?4:2)+' → '+fmt(h.price,h.type==='fund'?4:2)+'</div></div>'+
     '<div class="r"><b>'+fmt(s.val)+'</b><div class="'+cls(s.pl)+'">'+sign(s.pl)+' ('+sign(s.pct)+'%)</div>'+(s.div?'<div class="muted">ปันผล '+fmt(s.div)+'</div>':'')+'</div></div>';
   });
-  return '<div class="card"><div class="muted">มูลค่าพอร์ต</div><div class="big">'+fmt(t.val)+' ฿</div>'+
+  return seg+split+'<div class="card"><div class="muted">'+title+'</div><div class="big">'+fmt(t.val)+' ฿</div>'+
    '<div class="grid"><div><span>ต้นทุน</span>'+fmt(t.cost)+'</div><div><span>กำไร/ขาดทุนจากราคา</span><b class="'+cls(t.pl)+'">'+sign(t.pl)+' ('+sign(t.pct)+'%)</b></div>'+
    '<div><span>ปันผลที่ได้รับแล้ว</span><b class="up">'+fmt(t.div)+'</b></div><div><span>กำไร/ขาดทุนที่ขายแล้ว</span><b class="'+cls(t.real)+'">'+sign(t.real)+'</b></div></div>'+
    '<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--line)"><span class="muted">ผลรวมจริง (ราคา + ปันผล + ที่ขายแล้ว)</span><div class="big '+cls(t.total)+'" style="font-size:22px">'+sign(t.total)+' ฿ ('+sign(t.tpct)+'%)</div></div>'+
    (uLoss<0||uGain>0?'<div class="res yellow" style="margin:10px 0 0">💡 '+(uLoss<0?'ขาดทุนที่ยังไม่ขาย <b class="down">'+fmt(uLoss)+' ฿</b> คือมูลค่าที่หายไปแล้วจริง ไม่ขายก็ไม่ได้คืน — คำถามที่ถูกคือเงินที่เหลือควรอยู่ตรงไหน':'')+(uLoss<0&&uGain>0?'<br>':'')+(uGain>0?'กำไรที่ยังไม่ขาย <b class="up">+'+fmt(uGain)+' ฿</b> ยังไม่ใช่เงินในมือ ลดลงได้ถ้าราคาลง — ตั้งแผนขายไว้ที่หมอพอร์ต':'')+'</div>':'')+'</div>'+
    signalsHTML()+
-   '<div class="card"><h2>สัดส่วนตามกลุ่ม</h2><div class="bar">'+bar+'</div><div class="legend">'+leg+'</div></div>'+
-   '<div class="card"><div class="row" style="justify-content:space-between;margin-bottom:6px"><h2 style="margin:0">รายการที่ถือ</h2><div class="row"><button class="btn sm ghost" onclick="priceModal()">อัปเดตราคา</button><button class="btn sm" onclick="editH()">+ เพิ่ม</button></div></div>'+list+'</div>';
+   '<div class="card"><h2>สัดส่วนตามกลุ่ม'+(pf==='all'?'':(pf==='stock'?' (เฉพาะหุ้น)':' (เฉพาะกองทุน)'))+'</h2><div class="bar">'+bar+'</div><div class="legend">'+leg+'</div></div>'+
+   '<div class="card"><div class="row" style="justify-content:space-between;margin-bottom:6px"><h2 style="margin:0">รายการที่ถือ</h2><div class="row"><button class="btn sm ghost" onclick="priceModal()">อัปเดตราคา</button><button class="btn sm" onclick="editH()">+ เพิ่ม</button></div></div>'+(list||'<div class="empty">ยังไม่มีรายการในกลุ่มนี้</div>')+'</div>';
 };
+/* แยกพอร์ต หุ้น / กองทุน */
+try{S.pf=localStorage.getItem('inv_pf')||'all';}catch(e){S.pf='all';}
+function setPf(v){S.pf=v;try{localStorage.setItem('inv_pf',v);}catch(e){}render();window.scrollTo(0,0);}
+function pfList(pf){return S.h.filter(function(h){return pf==='all'||(pf==='fund'?h.type==='fund':h.type!=='fund');});}
+function pfTotals(hs){
+  var t={cost:0,val:0,div:0,real:0};
+  hs.forEach(function(h){var s=stat(h);t.cost+=s.cost;t.val+=s.val;t.div+=s.div;t.real+=s.real;});
+  t.pl=t.val-t.cost;t.total=t.pl+t.div+t.real;t.pct=t.cost?t.pl/t.cost*100:0;t.tpct=t.cost?t.total/t.cost*100:0;
+  return t;
+}
 function seed(){
   /* ข้อมูลจากแคปหน้าจอ 25 ต.ค. 69 (หุ้นจากแอปโบรก, กองทุนจาก K PLUS NAV 21–22 ต.ค. 69) */
   var a=[['AP','เอพี (ไทยแลนด์)','stock','อสังหาริมทรัพย์',305,9.38,8.00],['DOHOME','ดูโฮม','stock','ค้าปลีกวัสดุก่อสร้าง',3,12.79,3.48],['GULF','Gulf Development','stock','พลังงาน/สาธารณูปโภค',163,41.54,61.75],
