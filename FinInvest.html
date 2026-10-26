@@ -162,7 +162,7 @@ function load(){
       if(s.key==='plan')S.plan=extend({budget:500,rate:6,years:10},s.value||{});
       if(s.key==='lessons')S.lessons=s.value||{};
       if(s.key==='watch')S.watch=s.value||[];
-      if(s.key==='fee'&&s.value){FEE=num(s.value.pct);FEE_MIN=num(s.value.min);}
+      if(s.key==='fee'&&s.value){FEE=num(s.value.pct);FEE_MIN=num(s.value.min);if(s.value.funds)extend(FFEE,s.value.funds);}
       if(s.key==='rules')S.rules=s.value||{};
     });
     S.h.sort(function(a,b){return a.symbol<b.symbol?-1:1;});
@@ -337,7 +337,7 @@ PAGES.doc=function(){
   return '<div class="card"><h2>🩺 หลักของหมอพอร์ต</h2><p class="muted">ราคาที่เราซื้อมา ไม่มีผลกับอนาคตของหุ้น คำถามที่ถูกคือ "เงินก้อนนี้ วันนี้ ควรอยู่ตรงไหน" ไม่ใช่ "รอให้กลับมาเท่าทุนก่อน"</p></div>'+
    signalsHTML()+
    '<div class="card"><h2>🧮 ลองคิดก่อนตัดสินใจ</h2><p class="muted">จำลองตัวเลขก่อนซื้อขายจริง ไม่มีการบันทึกลงพอร์ต</p><div class="row"><button class="btn sm ghost" onclick="simAvg()">ถัวเฉลี่ย</button><button class="btn sm ghost" onclick="simSell()">ขายแล้วย้ายเงิน</button><button class="btn sm ghost" onclick="simTrim()">ลดน้ำหนักตัวที่หนัก</button></div>'+
-   '<div class="row" style="margin-top:8px"><button class="btn sm" onclick="rulesModal()">🎯 แผนขายทำกำไร</button><button class="btn sm ghost" onclick="feeModal()">⚙️ ค่าคอม ('+feeTxt()+')</button></div></div>'+
+   '<div class="row" style="margin-top:8px"><button class="btn sm" onclick="rulesModal()">🎯 แผนขายทำกำไร</button><button class="btn sm ghost" onclick="feeModal()">⚙️ ค่าธรรมเนียม (หุ้น '+feeTxt()+')</button></div></div>'+
    (warn.length?'<div class="card"><h2 class="warn">⚠️ ความเสี่ยงกระจุกตัว</h2>'+warn.map(function(w){return '<p style="margin:6px 0">'+w+'</p>';}).join('')+'</div>':'')+
    '<div class="card"><h2>ตรวจรายตัว</h2>'+list+'</div><p class="muted">ผลตรวจเป็นเครื่องมือช่วยคิด ไม่ใช่คำแนะนำซื้อขายจากผู้เชี่ยวชาญที่มีใบอนุญาต</p>';
 };
@@ -368,17 +368,27 @@ function saveDoc(){
 /* ===== SIMULATORS (ลองคิดก่อน) ===== */
 /* ค่าคอมหุ้น (รวม VAT และค่าธรรมเนียมตลาด) — ตั้งเองได้ที่ ⚙️ ค่าคอม ในหน้าหมอพอร์ต; กองทุนไม่คิดค่าคอม */
 var FEE=0.17,FEE_MIN=0;
+/* ค่าธรรมเนียมขายคืนกองทุน (% ของมูลค่าขาย) — ค่าเริ่มต้นจาก Factsheet บลจ.กสิกรไทย แก้ได้ที่ ⚙️ */
+var FFEE={'K-US500X-A(A)':0.15,'K-SET50':0.10,'K-SF-A':0};
 function feeOf(amt){return amt>0?Math.max(FEE_MIN,amt*FEE/100):0;}
+function fundFee(sym){return num(FFEE[sym]);}
+/* ค่าธรรมเนียมตอนขาย: หุ้น = ค่าคอม, กองทุน = ค่าธรรมเนียมขายคืนของกองนั้น */
+function feeFor(h,amt){return amt>0?(h.type==='fund'?amt*fundFee(h.symbol)/100:feeOf(amt)):0;}
 function feeTxt(){return FEE+'%'+(FEE_MIN?' ขั้นต่ำ '+fmt(FEE_MIN,0)+' ฿/คำสั่ง':'');}
 function feeModal(){
-  modal('<h3>⚙️ ค่าคอมมิชชันหุ้น</h3><p class="muted">ใช้ในเครื่องมือ "ลองคิดก่อน" ทุกตัว (กองทุนไม่คิดค่าคอม)</p>'+
+  var ff='';
+  S.h.forEach(function(h){if(h.type==='fund')ff+='<div class="row" style="justify-content:space-between;margin:6px 0"><span>'+esc(h.symbol)+'</span><span><input class="mini" id="ff_'+h.id+'" inputmode="decimal" value="'+fundFee(h.symbol)+'"> %</span></div>';});
+  modal('<h3>⚙️ ค่าคอมและค่าธรรมเนียม</h3><p class="muted">ใช้ในเครื่องมือ "ลองคิดก่อน" และช่วยประมาณค่าธรรมเนียมในฟอร์มบันทึก</p>'+
+   '<label style="font-size:15px;color:var(--text)"><b>📈 หุ้น — ค่าคอมมิชชัน</b></label>'+
    fld('ค่าคอม + VAT + ค่าธรรมเนียมตลาด (% ของมูลค่าซื้อขาย)','fe_p',FEE,true)+fld('ค่าคอมขั้นต่ำต่อคำสั่ง (฿) — ไม่มีใส่ 0','fe_m',FEE_MIN,true)+
+   (ff?'<label style="font-size:15px;color:var(--text);margin-top:16px"><b>🏦 กองทุน — ค่าธรรมเนียมขายคืน (% ของมูลค่าที่ขาย)</b></label>'+ff+'<p class="muted">ค่าเริ่มต้นจาก Factsheet ของ บลจ.กสิกรไทย อาจเปลี่ยนได้ — เช็กในหนังสือชี้ชวนล่าสุดใน K PLUS · ซื้อกองทุนไม่มีค่าธรรมเนียม (ยกเว้น)</p>':'')+
    '<div class="res blue"><b>หาตัวเลขจริงของคุณ</b><p style="margin:6px 0 0">เปิดแอปโบรก → แท็บ <b>Deal Sum</b> หรือใบยืนยันการซื้อขาย (Confirmation note) ที่ส่งมาทางอีเมล แล้วคำนวณ<br><b>(ค่าคอม + VAT + ค่าธรรมเนียม) ÷ มูลค่าซื้อขาย × 100</b><br>ค่าเริ่มต้น 0.17% เป็นแค่ค่าประมาณทั่วไปของการซื้อขายผ่านอินเทอร์เน็ต ไม่ใช่ของโบรกคุณ</p></div>'+
    '<div class="row" style="margin-top:12px"><button class="btn" onclick="saveFee()">บันทึก</button><button class="btn ghost" onclick="closeM()">ยกเลิก</button></div>');
 }
 function saveFee(){
   FEE=num($('fe_p').value);FEE_MIN=num($('fe_m').value);
-  db.setting('fee',{pct:FEE,min:FEE_MIN}).then(function(){closeM();toast('บันทึกค่าคอมแล้ว');render();}).catch(fail);
+  S.h.forEach(function(h){var e=$('ff_'+h.id);if(e)FFEE[h.symbol]=num(e.value);});
+  db.setting('fee',{pct:FEE,min:FEE_MIN,funds:FFEE}).then(function(){closeM();toast('บันทึกค่าธรรมเนียมแล้ว');render();}).catch(fail);
 }
 var SECK=[];
 var EXTRA_COLORS=['#e59866','#7fb3d5','#c39bd3','#76d7c4','#f7dc6f','#d98880'];
@@ -453,7 +463,7 @@ function simSell(){
   modal('<h3>🧮 ลองขายแล้วย้ายเงิน</h3><p class="muted">ใส่ % ที่จะขายของแต่ละตัว (100 = ขายหมด)</p>'+
    '<div class="row" style="margin-bottom:6px"><button class="btn sm ghost" onclick="simSellPreset(\'red\')">เลือกหุ้นที่แดงทั้งหมด</button><button class="btn sm ghost" onclick="simSellPreset(\'clear\')">ล้าง</button></div>'+rows+
    '<label>ย้ายเงินไปที่</label><select id="ss_to" onchange="simSellCalc()">'+fundOpts()+'</select>'+
-   '<p class="muted">ค่าคอมหุ้น '+feeTxt()+' (แก้ได้ที่ ⚙️ ค่าคอม) · ขายกองทุนไม่คิดค่าคอม</p>'+
+   '<p class="muted">ค่าคอมหุ้น '+feeTxt()+' · กองทุนคิดค่าธรรมเนียมขายคืนตามที่ตั้งไว้ของแต่ละกอง (แก้ได้ที่ ⚙️ ค่าธรรมเนียม)</p>'+
    '<div id="ss_out"></div><div class="row" style="margin-top:12px"><button class="btn ghost" onclick="closeM()">ปิด</button></div>');
   simSellCalc();
 }
@@ -464,7 +474,7 @@ function simSellCalc(){
     var v=holdVal(h),k=h.sector||'ไม่ระบุ',e=$('ss_'+h.id),pct=e?Math.min(100,Math.max(0,num(e.value)))/100:0;
     var su=num(h.units)*pct;if(h.type!=='fund')su=Math.round(su);
     var sv=su*num(h.price);
-    if(su>0){cash+=sv;real+=(num(h.price)-num(h.avg_cost))*su;n++;if(h.type!=='fund')fee+=feeOf(sv);}
+    if(su>0){cash+=sv;real+=(num(h.price)-num(h.avg_cost))*su;n++;fee+=feeFor(h,sv);}
     before.push({s:h.symbol,k:k,v:v});after.push({s:h.symbol,k:k,v:v-sv,id:h.id});
   });
   if(!n){o.innerHTML='<p class="muted">ยังไม่ได้เลือกตัวที่จะขาย</p>';return;}
@@ -473,7 +483,7 @@ function simSellCalc(){
   if(to)after.forEach(function(x){if(x.id===to){x.v+=net;tn=x.s;}});
   else after.push({s:'เงินสด',k:'เงินสด',v:net});
   var m0=maxW(before),m1=maxW(after);
-  o.innerHTML='<div class="q">'+kv('ได้เงินจากการขาย',fmt(cash)+' ฿')+kv('ค่าคอมโดยประมาณ','−'+fmt(fee)+' ฿')+
+  o.innerHTML='<div class="q">'+kv('ได้เงินจากการขาย',fmt(cash)+' ฿')+kv('ค่าคอม + ค่าธรรมเนียมขายคืน (ประมาณ)','−'+fmt(fee)+' ฿')+
     kv('เงินสุทธิย้ายไป '+esc(tn),fmt(net)+' ฿','up')+kv('กำไร/ขาดทุนที่เกิดขึ้นจริง',sign(real)+' ฿',cls(real))+
     kv('เทียบเท่า DCA',fmt(net/(S.plan.budget||500),1)+' เดือน')+
     kv('ตัวที่หนักสุดในพอร์ต',esc(m0.s)+' '+fmt(m0.p,0)+'% → '+esc(m1.s)+' '+fmt(m1.p,0)+'%')+'</div>'+
@@ -924,6 +934,7 @@ function txForm(sym,amt,opt){
   if(opt.fee)$('x_fee').value=Math.round(opt.fee*100)/100;
   if(opt.reason)$('x_reason').value=opt.reason;
   if(opt.ntype){txNew();$('x_ntype').value=opt.ntype;}
+  $('x_price').oninput=txFeeHint;$('x_units').oninput=txFeeHint;$('x_amt').oninput=txFeeHint;$('x_ntype').onchange=txFeeHint;
   txNew();
 }
 /* เปิดฟอร์มขายจริงจากผลในเครื่องมือลดน้ำหนัก แล้วต่อด้วยฟอร์มซื้อปลายทาง */
@@ -943,11 +954,21 @@ function trimRecord(){
    note:'กรอกไว้ให้จากที่ลองคิด — <b>แก้ราคาขายและค่าคอมให้ตรงกับที่ขายจริง</b> (ดูจาก Deal Sum ในแอปโบรก)',
    reason:'ลดน้ำหนัก '+h.symbol+' ให้เหลือประมาณ '+fmt(t.nw,0)+'% ของพอร์ต'+(t.to==='res'?' เก็บเป็นก้อนลงทุนสำรอง':'')});
 }
-function txHint(){var d=$('x_kind').value==='dividend';$('x_tr').style.display=d?'none':'';$('x_fe').style.display=d?'none':'';}
+function txHint(){var d=$('x_kind').value==='dividend';$('x_tr').style.display=d?'none':'';$('x_fe').style.display=d?'none':'';txFeeHint();}
+/* แสดงค่าธรรมเนียมโดยประมาณเป็นตัวอย่างในช่อง (ไม่กรอกให้เอง ให้ใส่ตัวเลขจริงจากโบรก/K PLUS) */
+function txFeeHint(){
+  var e=$('x_fee');if(!e)return;
+  var sym=$('x_sym').value.trim().toUpperCase(),h=findSym(sym)||{symbol:sym,type:($('x_ntype')&&$('x_new').style.display!=='none'?$('x_ntype').value:'stock')};
+  var kind=$('x_kind').value,p=num($('x_price').value),u=num($('x_units').value),a=num($('x_amt').value)||u*p,f=0;
+  if(kind==='sell')f=feeFor(h,a);
+  else if(kind==='buy'&&h.type!=='fund')f=feeOf(a);
+  e.placeholder=a?(f?'ประมาณ '+fmt(f)+' ฿ — ใส่ตัวเลขจริง':'ไม่มีค่าธรรมเนียม (0)'):'';
+}
 function txNew(){
   var s=$('x_sym').value.trim().toUpperCase(),isNew=!!s&&!findSym(s);
   $('x_new').style.display=isNew?'':'none';
   if(isNew&&!$('x_nsec').value){for(var i=0;i<S.watch.length;i++)if(S.watch[i].s===s&&S.watch[i].k){$('x_nsec').value=S.watch[i].k;break;}}
+  txFeeHint();
 }
 function saveTx(){
   var sym=$('x_sym').value.trim().toUpperCase(),kind=$('x_kind').value,h=findSym(sym),reason=$('x_reason').value.trim();
