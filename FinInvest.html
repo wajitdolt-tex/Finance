@@ -149,7 +149,7 @@ var db={
 };
 
 /* ===== STATE ===== */
-var S={h:[],tx:[],plan:{budget:500,rate:6,years:10},lessons:{},watch:[],page:'port'};
+var S={h:[],tx:[],plan:{budget:500,rate:6,years:10},lessons:{},watch:[],rules:{},page:'port'};
 var COLORS=['#4fb3ff','#2ecc71','#f5b041','#ff5c5c','#a569bd','#48c9b0','#ec7063','#5dade2','#f4d03f','#95a5a6'];
 
 function load(){
@@ -159,9 +159,12 @@ function load(){
       if(s.key==='plan')S.plan=extend({budget:500,rate:6,years:10},s.value||{});
       if(s.key==='lessons')S.lessons=s.value||{};
       if(s.key==='watch')S.watch=s.value||[];
+      if(s.key==='fee'&&s.value){FEE=num(s.value.pct);FEE_MIN=num(s.value.min);}
+      if(s.key==='rules')S.rules=s.value||{};
     });
     S.h.sort(function(a,b){return a.symbol<b.symbol?-1:1;});
     S.tx.sort(function(a,b){return a.date<b.date?1:(a.date>b.date?-1:(String(a.created_at||'')<String(b.created_at||'')?1:-1));});
+    updatePeaks();
     render();
   }).catch(fail);
 }
@@ -217,7 +220,8 @@ PAGES.port=function(){
     return '<div class="card"><h2>เริ่มต้นพอร์ต</h2><p class="muted">ยังไม่มีรายการ กดปุ่มด้านล่างเพื่อใส่รายชื่อหุ้น/กองทุนที่ถืออยู่ แล้วค่อยกรอกจำนวน ต้นทุน และราคาทีละตัว</p>'+
     '<div class="row"><button class="btn" onclick="seed()">ใส่พอร์ตจริง (หุ้น 6 ตัว + กองกสิกร 3 กอง)</button><button class="btn ghost" onclick="editH()">+ เพิ่มเอง</button></div></div>';
   }
-  var t=totals(),sec=sectors(),bar='',leg='';
+  var t=totals(),sec=sectors(),bar='',leg='',uLoss=0,uGain=0;
+  S.h.forEach(function(h){var pl=stat(h).pl;if(pl<0)uLoss+=pl;else uGain+=pl;});
   sec.forEach(function(s,i){var c=COLORS[i%COLORS.length];bar+='<div style="width:'+s.p+'%;background:'+c+'"></div>';leg+='<span><i class="dot" style="background:'+c+'"></i>'+esc(s.k)+' '+fmt(s.p,0)+'%</span>';});
   var list='';
   S.h.forEach(function(h){
@@ -228,7 +232,9 @@ PAGES.port=function(){
   return '<div class="card"><div class="muted">มูลค่าพอร์ต</div><div class="big">'+fmt(t.val)+' ฿</div>'+
    '<div class="grid"><div><span>ต้นทุน</span>'+fmt(t.cost)+'</div><div><span>กำไร/ขาดทุนจากราคา</span><b class="'+cls(t.pl)+'">'+sign(t.pl)+' ('+sign(t.pct)+'%)</b></div>'+
    '<div><span>ปันผลที่ได้รับแล้ว</span><b class="up">'+fmt(t.div)+'</b></div><div><span>กำไร/ขาดทุนที่ขายแล้ว</span><b class="'+cls(t.real)+'">'+sign(t.real)+'</b></div></div>'+
-   '<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--line)"><span class="muted">ผลรวมจริง (ราคา + ปันผล + ที่ขายแล้ว)</span><div class="big '+cls(t.total)+'" style="font-size:22px">'+sign(t.total)+' ฿ ('+sign(t.tpct)+'%)</div></div></div>'+
+   '<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--line)"><span class="muted">ผลรวมจริง (ราคา + ปันผล + ที่ขายแล้ว)</span><div class="big '+cls(t.total)+'" style="font-size:22px">'+sign(t.total)+' ฿ ('+sign(t.tpct)+'%)</div></div>'+
+   (uLoss<0||uGain>0?'<div class="res yellow" style="margin:10px 0 0">💡 '+(uLoss<0?'ขาดทุนที่ยังไม่ขาย <b class="down">'+fmt(uLoss)+' ฿</b> คือมูลค่าที่หายไปแล้วจริง ไม่ขายก็ไม่ได้คืน — คำถามที่ถูกคือเงินที่เหลือควรอยู่ตรงไหน':'')+(uLoss<0&&uGain>0?'<br>':'')+(uGain>0?'กำไรที่ยังไม่ขาย <b class="up">+'+fmt(uGain)+' ฿</b> ยังไม่ใช่เงินในมือ ลดลงได้ถ้าราคาลง — ตั้งแผนขายไว้ที่หมอพอร์ต':'')+'</div>':'')+'</div>'+
+   signalsHTML()+
    '<div class="card"><h2>สัดส่วนตามกลุ่ม</h2><div class="bar">'+bar+'</div><div class="legend">'+leg+'</div></div>'+
    '<div class="card"><div class="row" style="justify-content:space-between;margin-bottom:6px"><h2 style="margin:0">รายการที่ถือ</h2><div class="row"><button class="btn sm ghost" onclick="priceModal()">อัปเดตราคา</button><button class="btn sm" onclick="editH()">+ เพิ่ม</button></div></div>'+list+'</div>';
 };
@@ -303,7 +309,9 @@ PAGES.doc=function(){
     list+='<div class="item" onclick="docModal(\''+h.id+'\')"><div><b>'+esc(h.symbol)+'</b>'+chip+'</div><div class="'+cls(s.pct)+'">'+sign(s.pct)+'%</div></div>';
   });
   return '<div class="card"><h2>🩺 หลักของหมอพอร์ต</h2><p class="muted">ราคาที่เราซื้อมา ไม่มีผลกับอนาคตของหุ้น คำถามที่ถูกคือ "เงินก้อนนี้ วันนี้ ควรอยู่ตรงไหน" ไม่ใช่ "รอให้กลับมาเท่าทุนก่อน"</p></div>'+
-   '<div class="card"><h2>🧮 ลองคิดก่อนตัดสินใจ</h2><p class="muted">จำลองตัวเลขก่อนซื้อขายจริง ไม่มีการบันทึกลงพอร์ต</p><div class="row"><button class="btn sm ghost" onclick="simAvg()">ถัวเฉลี่ย</button><button class="btn sm ghost" onclick="simSell()">ขายแล้วย้ายเงิน</button><button class="btn sm ghost" onclick="simTrim()">ลดน้ำหนักตัวที่หนัก</button></div></div>'+
+   signalsHTML()+
+   '<div class="card"><h2>🧮 ลองคิดก่อนตัดสินใจ</h2><p class="muted">จำลองตัวเลขก่อนซื้อขายจริง ไม่มีการบันทึกลงพอร์ต</p><div class="row"><button class="btn sm ghost" onclick="simAvg()">ถัวเฉลี่ย</button><button class="btn sm ghost" onclick="simSell()">ขายแล้วย้ายเงิน</button><button class="btn sm ghost" onclick="simTrim()">ลดน้ำหนักตัวที่หนัก</button></div>'+
+   '<div class="row" style="margin-top:8px"><button class="btn sm" onclick="rulesModal()">🎯 แผนขายทำกำไร</button><button class="btn sm ghost" onclick="feeModal()">⚙️ ค่าคอม ('+feeTxt()+')</button></div></div>'+
    (warn.length?'<div class="card"><h2 class="warn">⚠️ ความเสี่ยงกระจุกตัว</h2>'+warn.map(function(w){return '<p style="margin:6px 0">'+w+'</p>';}).join('')+'</div>':'')+
    '<div class="card"><h2>ตรวจรายตัว</h2>'+list+'</div><p class="muted">ผลตรวจเป็นเครื่องมือช่วยคิด ไม่ใช่คำแนะนำซื้อขายจากผู้เชี่ยวชาญที่มีใบอนุญาต</p>';
 };
@@ -332,9 +340,23 @@ function saveDoc(){
 }
 
 /* ===== SIMULATORS (ลองคิดก่อน) ===== */
-var FEE=0.17;   /* ค่าคอม+VAT โดยประมาณ (%) */
+/* ค่าคอมหุ้น (รวม VAT และค่าธรรมเนียมตลาด) — ตั้งเองได้ที่ ⚙️ ค่าคอม ในหน้าหมอพอร์ต; กองทุนไม่คิดค่าคอม */
+var FEE=0.17,FEE_MIN=0;
+function feeOf(amt){return amt>0?Math.max(FEE_MIN,amt*FEE/100):0;}
+function feeTxt(){return FEE+'%'+(FEE_MIN?' ขั้นต่ำ '+fmt(FEE_MIN,0)+' ฿/คำสั่ง':'');}
+function feeModal(){
+  modal('<h3>⚙️ ค่าคอมมิชชันหุ้น</h3><p class="muted">ใช้ในเครื่องมือ "ลองคิดก่อน" ทุกตัว (กองทุนไม่คิดค่าคอม)</p>'+
+   fld('ค่าคอม + VAT + ค่าธรรมเนียมตลาด (% ของมูลค่าซื้อขาย)','fe_p',FEE,true)+fld('ค่าคอมขั้นต่ำต่อคำสั่ง (฿) — ไม่มีใส่ 0','fe_m',FEE_MIN,true)+
+   '<div class="res blue"><b>หาตัวเลขจริงของคุณ</b><p style="margin:6px 0 0">เปิดแอปโบรก → แท็บ <b>Deal Sum</b> หรือใบยืนยันการซื้อขาย (Confirmation note) ที่ส่งมาทางอีเมล แล้วคำนวณ<br><b>(ค่าคอม + VAT + ค่าธรรมเนียม) ÷ มูลค่าซื้อขาย × 100</b><br>ค่าเริ่มต้น 0.17% เป็นแค่ค่าประมาณทั่วไปของการซื้อขายผ่านอินเทอร์เน็ต ไม่ใช่ของโบรกคุณ</p></div>'+
+   '<div class="row" style="margin-top:12px"><button class="btn" onclick="saveFee()">บันทึก</button><button class="btn ghost" onclick="closeM()">ยกเลิก</button></div>');
+}
+function saveFee(){
+  FEE=num($('fe_p').value);FEE_MIN=num($('fe_m').value);
+  db.setting('fee',{pct:FEE,min:FEE_MIN}).then(function(){closeM();toast('บันทึกค่าคอมแล้ว');render();}).catch(fail);
+}
 var SECK=[];
-function secColor(k){var i=SECK.indexOf(k);if(i<0){SECK.push(k);i=SECK.length-1;}return COLORS[i%COLORS.length];}
+var EXTRA_COLORS=['#e59866','#7fb3d5','#c39bd3','#76d7c4','#f7dc6f','#d98880'];
+function secColor(k){if(/เงินสด|เงินสำรอง/.test(k))return '#dfe6ee';var i=SECK.indexOf(k);if(i<0){SECK.push(k);i=SECK.length-1;}return i<COLORS.length?COLORS[i]:EXTRA_COLORS[(i-COLORS.length)%EXTRA_COLORS.length];}
 function primeColors(){SECK=sectors().map(function(s){return s.k;});}
 function holdVal(h){return num(h.units)*num(h.price);}
 function kv(l,v,c){return '<div class="kv"><span>'+l+'</span><b class="'+(c||'')+'">'+v+'</b></div>';}
@@ -377,6 +399,16 @@ function simAvgCalc(){
    kv('ราคาต้องขึ้นกี่ % ถึงเท่าทุน',(hu?(be0?sign(be0,0)+'%':'กำไรอยู่แล้ว'):'-')+' → '+(be1?sign(be1,0)+'%':'กำไรอยู่แล้ว'))+
    kv('เงินทั้งหมดในตัวนี้',fmt(hu*ha)+' → '+fmt(hu*ha+spend)+' ฿')+
    kv('น้ำหนักในพอร์ต',fmt(w0,0)+'% → <span class="'+(w1>25?'warn':'')+'">'+fmt(w1,0)+'%</span>')+'</div>';
+  if(hu){
+    var sc=[[p*0.8,'ลงอีก 20%'],[p*0.9,'ลงอีก 10%'],[p,'ราคาที่ซื้อ'],[p*1.2,'ขึ้น 20%'],[p*1.5,'ขึ้น 50%']];
+    if(na>p*1.001)sc.push([na,'ถึงต้นทุนใหม่']);
+    if(ha>p*1.001&&Math.abs(ha-na)>0.001)sc.push([ha,'ถึงต้นทุนเดิม']);
+    sc.sort(function(x,y){return x[0]-y[0];});
+    var tb='<table class="tb"><tr><td class="muted">ถ้าราคาเป็น</td><td class="muted r">ไม่ถัว</td><td class="muted r">ถัว</td></tr>';
+    sc.forEach(function(s){var a0=hu*(s[0]-ha),a1=nu*s[0]-(hu*ha+spend);
+      tb+='<tr><td>'+fmt(s[0],d)+' <small class="muted">'+s[1]+'</small></td><td class="r '+cls(a0)+'">'+sign(a0,0)+'</td><td class="r '+cls(a1)+'"><b>'+sign(a1,0)+'</b></td></tr>';});
+    html+='<label>กำไร/ขาดทุนรวม (บาท) ถ้าราคาเปลี่ยน</label>'+tb+'</table><p class="muted">ตอนซื้อ ยอดขาดทุนเป็นบาทยังเท่าเดิม แต่หลังจากนั้นทุกการขยับจะแรงขึ้นทั้งขาขึ้นและขาลง เพราะถือมากขึ้น</p>';
+  }
   if(stock&&add<100)html+='<p class="muted">ต่ำกว่า 100 หุ้น ต้องซื้อในกระดานเศษหุ้น (Odd lot) ราคาอาจต่างจากกระดานหลักเล็กน้อย</p>';
   var r=h.doctor&&h.doctor.result;
   if(r&&r.lv==='red')html+='<div class="res red">หมอพอร์ตเคยให้ผล "ทบทวน" กับตัวนี้ ถัวเพิ่ม = ใส่เงินเพิ่มกับสิ่งที่คุณเองยังไม่มั่นใจ</div>';
@@ -395,23 +427,22 @@ function simSell(){
   modal('<h3>🧮 ลองขายแล้วย้ายเงิน</h3><p class="muted">ใส่ % ที่จะขายของแต่ละตัว (100 = ขายหมด)</p>'+
    '<div class="row" style="margin-bottom:6px"><button class="btn sm ghost" onclick="simSellPreset(\'red\')">เลือกหุ้นที่แดงทั้งหมด</button><button class="btn sm ghost" onclick="simSellPreset(\'clear\')">ล้าง</button></div>'+rows+
    '<label>ย้ายเงินไปที่</label><select id="ss_to" onchange="simSellCalc()">'+fundOpts()+'</select>'+
-   fld('ค่าคอมมิชชัน + VAT (%) โดยประมาณ','ss_fee',FEE,true)+
+   '<p class="muted">ค่าคอมหุ้น '+feeTxt()+' (แก้ได้ที่ ⚙️ ค่าคอม) · ขายกองทุนไม่คิดค่าคอม</p>'+
    '<div id="ss_out"></div><div class="row" style="margin-top:12px"><button class="btn ghost" onclick="closeM()">ปิด</button></div>');
-  $('ss_fee').oninput=simSellCalc;
   simSellCalc();
 }
 function simSellPreset(m){S.h.forEach(function(h){var e=$('ss_'+h.id);if(!e)return;e.value=(m==='red'&&h.type!=='fund'&&stat(h).pl<0)?100:'';});simSellCalc();}
 function simSellCalc(){
-  var cash=0,real=0,n=0,before=[],after=[],o=$('ss_out');
+  var cash=0,real=0,n=0,fee=0,before=[],after=[],o=$('ss_out');
   S.h.forEach(function(h){
     var v=holdVal(h),k=h.sector||'ไม่ระบุ',e=$('ss_'+h.id),pct=e?Math.min(100,Math.max(0,num(e.value)))/100:0;
     var su=num(h.units)*pct;if(h.type!=='fund')su=Math.round(su);
     var sv=su*num(h.price);
-    if(su>0){cash+=sv;real+=(num(h.price)-num(h.avg_cost))*su;n++;}
+    if(su>0){cash+=sv;real+=(num(h.price)-num(h.avg_cost))*su;n++;if(h.type!=='fund')fee+=feeOf(sv);}
     before.push({s:h.symbol,k:k,v:v});after.push({s:h.symbol,k:k,v:v-sv,id:h.id});
   });
   if(!n){o.innerHTML='<p class="muted">ยังไม่ได้เลือกตัวที่จะขาย</p>';return;}
-  var fee=cash*num($('ss_fee').value)/100,net=cash-fee,to=$('ss_to').value,tn='เงินสด';
+  var net=cash-fee,to=$('ss_to').value,tn='เงินสด';
   real-=fee;
   if(to)after.forEach(function(x){if(x.id===to){x.v+=net;tn=x.s;}});
   else after.push({s:'เงินสด',k:'เงินสด',v:net});
@@ -429,27 +460,172 @@ function simTrim(id){
   var st=S.h.filter(function(h){return num(h.units)>0&&h.type!=='fund';});
   if(!st.length){toast('ยังไม่มีหุ้นที่ถืออยู่');return;}
   if(!id){var b=st[0];st.forEach(function(h){if(holdVal(h)>holdVal(b))b=h;});id=b.id;}
-  var opts=st.map(function(h){return '<option value="'+h.id+'"'+(h.id===id?' selected':'')+'>'+esc(h.symbol)+'</option>';}).join('');
-  modal('<h3>🧮 ลองลดน้ำหนัก</h3><p class="muted">ขายบางส่วนให้เหลือน้ำหนักตามเป้า แล้วย้ายเงินไปกองทุน (มูลค่าพอร์ตรวมเท่าเดิม)</p>'+
+  primeColors();
+  var opts=st.map(function(h){return '<option value="'+h.id+'"'+(h.id===id?' selected':'')+'>'+esc(h.symbol)+' ('+fmt(h.units,0)+' หุ้น)</option>';}).join('');
+  modal('<h3>🧮 ลองลดน้ำหนัก</h3><p class="muted">ขายบางส่วน แล้วย้ายเงินไปกองทุน หุ้นตัวใหม่ หรือเก็บเป็นก้อนลงทุนสำรอง (ไม่บันทึกจริง)</p>'+
    '<label>หุ้น</label><select id="st_id" onchange="simTrimCalc()">'+opts+'</select>'+
-   fld('อยากให้เหลือกี่ % ของพอร์ตทั้งหมด','st_w',25,true)+
-   '<label>ย้ายเงินไปที่</label><select id="st_to" onchange="simTrimCalc()">'+fundOpts()+'</select>'+
+   '<label>กำหนดการขายแบบ</label><select id="st_mode" onchange="simTrimMode()"><option value="pct">ให้เหลือน้ำหนัก % ตามเป้า</option><option value="qty">ระบุจำนวนหุ้นที่จะขาย</option></select>'+
+   '<div id="st_pbox">'+fld('อยากให้เหลือกี่ % ของพอร์ตทั้งหมด','st_w',25,true)+'</div>'+
+   '<div id="st_qbox" style="display:none">'+fld('จำนวนหุ้นที่จะขาย','st_n','',true)+
+    '<div class="row" style="margin-top:6px"><button class="btn sm ghost" onclick="stQ(100)">100 หุ้น</button><button class="btn sm ghost" onclick="stQ(\'half\')">ครึ่งหนึ่ง</button><button class="btn sm ghost" onclick="stQ(\'all\')">ขายทั้งหมด</button></div></div>'+
+   '<label>ย้ายเงินไปที่</label><select id="st_to" onchange="simTrimDest()">'+destOpts()+'</select>'+
+   '<div id="st_wpbox" style="display:none">'+fld('ราคาหุ้นตัวใหม่ (ดูจากแอปโบรก)','st_wp','',true)+'</div>'+
    '<div id="st_out"></div><div class="row" style="margin-top:12px"><button class="btn ghost" onclick="closeM()">ปิด</button></div>');
-  $('st_w').oninput=simTrimCalc;
+  $('st_w').oninput=simTrimCalc;$('st_n').oninput=simTrimCalc;$('st_wp').oninput=simTrimCalc;
+  simTrimCalc();
+}
+function destOpts(){
+  var o='<optgroup label="กองทุน">',ws='';
+  S.h.forEach(function(h){if(h.type==='fund')o+='<option value="h:'+h.id+'">'+esc(h.symbol)+'</option>';});
+  S.watch.forEach(function(w,i){if(w.st==='skip')return;ws+='<option value="w:'+i+'">'+esc(w.s)+(w.st==='like'?' ✓ น่าสนใจ':' (กำลังศึกษา)')+'</option>';});
+  o+='</optgroup><optgroup label="หุ้นตัวใหม่จากแท็บน่าศึกษา">'+(ws||'<option disabled>ยังไม่มี — เพิ่มในแท็บน่าศึกษาก่อน</option>')+'</optgroup>';
+  return o+'<optgroup label="อื่น ๆ"><option value="res">เก็บเป็นก้อนลงทุนสำรอง</option></optgroup>';
+}
+function simTrimMode(){
+  var q=$('st_mode').value==='qty';
+  $('st_pbox').style.display=q?'none':'';$('st_qbox').style.display=q?'':'none';
+  if(q&&!$('st_n').value){var u=num(findH($('st_id').value).units);$('st_n').value=Math.min(u,100);}
+  simTrimCalc();
+}
+function stQ(m){var u=num(findH($('st_id').value).units);$('st_n').value=m==='half'?Math.floor(u/2):(m==='all'?u:Math.min(u,m));simTrimCalc();}
+function simTrimDest(){
+  var to=$('st_to').value,isW=to.indexOf('w:')===0;
+  $('st_wpbox').style.display=isW?'':'none';
+  if(isW){
+    var w=S.watch[+to.slice(2)],p=0,fh=findSym(w.s);
+    if(fh)p=num(fh.price);
+    if(!p&&w.ai&&w.ai.sheet)(w.ai.sheet.numbers||[]).forEach(function(nm){if(!p&&/ราคา/.test(String(nm.label)))p=parseFloat(String(nm.value).replace(/,/g,''))||0;});
+    $('st_wp').value=p||'';
+  }
   simTrimCalc();
 }
 function simTrimCalc(){
-  var h=findH($('st_id').value),V=totals().val,v=holdVal(h),w=V?v/V*100:0,tw=num($('st_w').value),o=$('st_out'),p=num(h.price);
+  var h=findH($('st_id').value),V=totals().val,v=holdVal(h),w=V?v/V*100:0,o=$('st_out'),p=num(h.price),hu=num(h.units),su;
   if(!p){o.innerHTML='<p class="muted">ยังไม่มีราคาล่าสุดของตัวนี้</p>';return;}
-  if(tw>=w){o.innerHTML='<p class="muted">ตอนนี้ '+esc(h.symbol)+' หนัก '+fmt(w,1)+'% ต่ำกว่าเป้าอยู่แล้ว</p>';return;}
-  var su=Math.min(num(h.units),Math.ceil((v-tw/100*V)/p)),sv=su*p,fee=sv*FEE/100,gain=(p-num(h.avg_cost))*su-fee;
-  var left=num(h.units)-su,nw=V?(v-sv)/V*100:0,to=$('st_to').value,tn=to?findH(to).symbol:'เงินสด';
-  o.innerHTML='<div class="q">'+kv('น้ำหนักตอนนี้',fmt(w,1)+'%')+kv('ต้องขาย',fmt(su,0)+' หุ้น ≈ '+fmt(sv)+' ฿')+
+  if($('st_mode').value==='pct'){
+    var tw=num($('st_w').value);
+    if(tw>=w){o.innerHTML='<p class="muted">ตอนนี้ '+esc(h.symbol)+' หนัก '+fmt(w,1)+'% ต่ำกว่าเป้าอยู่แล้ว</p>';return;}
+    su=Math.min(hu,Math.ceil((v-tw/100*V)/p));
+  }else{
+    su=Math.min(hu,Math.max(0,Math.floor(num($('st_n').value))));
+    if(!su){o.innerHTML='<p class="muted">ใส่จำนวนหุ้นที่จะขาย (มีอยู่ '+fmt(hu,0)+' หุ้น)</p>';return;}
+  }
+  var sv=su*p,fee=feeOf(sv),net=sv-fee,gain=(p-num(h.avg_cost))*su-fee,left=hu-su,nw=V?(v-sv)/V*100:0;
+  var before=[],after=[],dest='',extra='',to=$('st_to').value;
+  S.h.forEach(function(x){var xv=holdVal(x),k=x.sector||'ไม่ระบุ';before.push({s:x.symbol,k:k,v:xv});after.push({s:x.symbol,k:k,v:x.id===h.id?xv-sv:xv,id:x.id});});
+  if(to.indexOf('h:')===0){
+    var f=findH(to.slice(2));
+    after.forEach(function(x){if(x.id===f.id)x.v+=net;});
+    dest=kv('เงินย้ายไป '+esc(f.symbol),fmt(net)+' ฿','up');
+  }else if(to.indexOf('w:')===0){
+    var ws=S.watch[+to.slice(2)],wp=num($('st_wp').value),ex=findSym(ws.s);
+    if(!wp){dest=kv('ซื้อ '+esc(ws.s),'<span class="warn">ใส่ราคาหุ้นเพื่อคำนวณ</span>');after.push({s:'เงินสด',k:'เงินสด',v:net});}
+    else{
+      var bu=Math.floor(net/(wp*(1+FEE/100)));
+      while(bu>0&&bu*wp+feeOf(bu*wp)>net)bu--;
+      var cost=bu*wp+feeOf(bu*wp),cash=net-cost,nv=bu*wp+(ex?holdVal(ex):0);
+      if(ex)after.forEach(function(x){if(x.id===ex.id)x.v+=bu*wp;});
+      else after.push({s:ws.s,k:ws.k||'หุ้นตัวใหม่',v:bu*wp});
+      if(cash>0.005)after.push({s:'เงินสด',k:'เงินสด',v:cash});
+      dest=kv('ซื้อ '+esc(ws.s)+' ได้',fmt(bu,0)+' หุ้น × '+fmt(wp)+' = '+fmt(bu*wp)+' ฿','up')+
+       kv('เงินเหลือ (หลังค่าคอมฝั่งซื้อ)',fmt(cash)+' ฿')+kv('น้ำหนัก '+esc(ws.s)+' ในพอร์ต',fmt(V?nv/V*100:0,1)+'%');
+      if(bu>0&&bu<100)extra+='<p class="muted">ซื้อต่ำกว่า 100 หุ้น ต้องซื้อในกระดานเศษหุ้น (Odd lot)</p>';
+      if(!bu)extra+='<p class="warn">เงินไม่พอซื้อ 1 หุ้น</p>';
+    }
+    if(ws.st!=='like')extra+='<div class="res yellow">ยังไม่ได้สรุปว่า '+esc(ws.s)+' "น่าสนใจ" (เช็กลิสต์ '+wCount(ws)+'/'+STUDY.length+') ทำการบ้านในแท็บน่าศึกษาให้ครบก่อนซื้อจริง</div>';
+  }else{
+    after.push({s:'เงินสำรอง',k:'เงินสำรองรอลงทุน',v:net});
+    dest=kv('ก้อนลงทุนสำรอง',fmt(net)+' ฿','up')+kv('ใช้ DCA ต่อได้อีก',fmt(net/(S.plan.budget||500),1)+' เดือน (เดือนละ '+fmt(S.plan.budget||500,0)+' ฿)');
+    extra+='<p class="muted">ระหว่างรอ พักเงินในกองตราสารหนี้ระยะสั้นอย่าง K-SF-A ได้ ผันผวนน้อยและยังได้ผลตอบแทนบ้าง</p>';
+  }
+  TRIM={id:h.id,su:su,p:p,fee:fee,net:net,nw:nw,to:to,bu:(typeof bu==='number'?bu:0),wp:(typeof wp==='number'?wp:0)};
+  extra+='<button class="btn" style="width:100%;margin:10px 0 4px" onclick="trimRecord()">📝 ขายจริงแล้ว — บันทึกการขาย</button><p class="muted" style="margin-top:0">เปิดฟอร์มขายที่กรอกไว้ให้แล้ว'+(to==='res'?'':' จากนั้นต่อด้วยฟอร์มซื้อปลายทาง')+' · กดหลังขายในแอปโบรกแล้วเท่านั้น</p>';
+  o.innerHTML='<div class="q">'+kv('น้ำหนักตอนนี้',fmt(w,1)+'% ('+fmt(hu,0)+' หุ้น)')+kv('ขาย',fmt(su,0)+' หุ้น ≈ '+fmt(sv)+' ฿')+
    kv('เหลือถือ',fmt(left,0)+' หุ้น')+kv('น้ำหนักหลังขาย',fmt(nw,1)+'%')+
-   kv('กำไร/ขาดทุนที่ได้จริง (หลังค่าคอม ~'+FEE+'%)',sign(gain)+' ฿',cls(gain))+kv('เงินย้ายไป '+esc(tn),fmt(sv-fee)+' ฿','up')+'</div>'+
+   kv('ค่าคอมฝั่งขาย ('+feeTxt()+')','−'+fmt(fee)+' ฿')+
+   kv('กำไร/ขาดทุนที่ได้จริง (หลังค่าคอม)',sign(gain)+' ฿',cls(gain))+dest+'</div>'+extra+
+   '<label>สัดส่วนตามกลุ่ม — ตอนนี้</label>'+allocHTML(before)+'<label>หลังขายและย้าย</label>'+allocHTML(after)+
    (gain>0?'<p class="muted">ข้อดี: เก็บกำไรบางส่วนไว้จริง และลดความเสี่ยงจากหุ้นตัวเดียว · ข้อเสีย: ถ้าตัวนี้ขึ้นต่อ ส่วนที่ขายไปจะไม่ได้กำไรเพิ่ม</p>':'')+
    (left>0&&left<100?'<p class="muted">หุ้นที่เหลือต่ำกว่า 100 หุ้น จะเป็นเศษหุ้น (Odd lot)</p>':'');
 }
+
+/* ===== แผนขายทำกำไร (ตั้งกฎล่วงหน้า + สัญญาณเตือน) ===== */
+var RULE_DEF={maxw:30,gain:50,gsell:33,trail:15};
+function saveRules(){return db.setting('rules',S.rules).catch(fail);}
+function updatePeaks(){
+  var ch=false;
+  S.h.forEach(function(h){var r=S.rules[h.symbol],p=num(h.price);if(r&&r.trail&&p>0&&(!r.peak||p>r.peak)){r.peak=p;r.peakDate=today();ch=true;}});
+  if(ch)saveRules();
+}
+function signals(){
+  var out=[],V=totals().val,td=today();
+  S.h.forEach(function(h){
+    var r=S.rules[h.symbol];if(!r||!num(h.units)||!num(h.price))return;
+    var p=num(h.price),v=holdVal(h),w=V?v/V*100:0,s=stat(h);
+    if(r.maxw&&w>r.maxw&&!(r.snooze&&r.snooze>td)){
+      var su=Math.min(num(h.units),Math.ceil((v-r.maxw/100*V)/p));
+      out.push({id:h.id,k:'maxw',lv:'yellow',n:su,t:h.symbol+' หนัก '+fmt(w,1)+'% เกินเพดาน '+r.maxw+'%',d:'ตามแผน: ขายประมาณ '+fmt(su,0)+' หุ้น เพื่อกลับมาที่ '+r.maxw+'%'});
+    }
+    if(r.gain&&s.pct>=r.gain&&!r.gainDone){
+      var gs=Math.max(1,Math.floor(num(h.units)*(r.gsell||33)/100));
+      out.push({id:h.id,k:'gain',lv:'green',n:gs,t:h.symbol+' กำไร '+sign(s.pct,0)+'% ถึงเป้า +'+r.gain+'%',d:'ตามแผน: ขาย '+(r.gsell||33)+'% ≈ '+fmt(gs,0)+' หุ้น เพื่อเก็บกำไรเป็นเงินจริง'});
+    }
+    if(r.trail&&r.peak&&p<=r.peak*(1-r.trail/100)){
+      out.push({id:h.id,k:'trail',lv:'red',n:0,t:h.symbol+' ลงจากจุดสูงสุด '+fmt((1-p/r.peak)*100,0)+'%',d:'สูงสุด '+fmt(r.peak)+' ('+esc(r.peakDate||'')+') → ตอนนี้ '+fmt(p)+' · ถึงเกณฑ์ทบทวน −'+r.trail+'% ลองตรวจหมอพอร์ตใหม่ว่าเหตุผลยังจริงไหม'});
+    }
+  });
+  return out;
+}
+function signalsHTML(){
+  var sg=signals();if(!sg.length)return '';
+  return '<div class="card"><h2>🔔 สัญญาณตามแผนขาย</h2>'+sg.map(function(x){
+    return '<div class="res '+x.lv+'"><b>'+esc(x.t)+'</b><p style="margin:4px 0 8px">'+x.d+'</p><div class="row">'+
+     (x.n?'<button class="btn sm" onclick="sigSim(\''+x.id+'\','+x.n+')">🧮 ลองคิดก่อนขาย</button>':'<button class="btn sm" onclick="docModal(\''+x.id+'\')">🩺 ตรวจใหม่</button>')+
+     '<button class="btn sm ghost" onclick="sigDone(\''+x.id+'\',\''+x.k+'\')">'+(x.k==='maxw'?'เลื่อนเตือน 30 วัน':(x.k==='gain'?'ขายแล้ว / ข้าม':'รับทราบ'))+'</button></div></div>';
+  }).join('')+'</div>';
+}
+function ruleTxt(r){
+  var a=[];
+  if(r.maxw)a.push('เพดาน '+r.maxw+'%');
+  if(r.gain)a.push('กำไร +'+r.gain+'% ขาย '+(r.gsell||33)+'%'+(r.gainDone?' (ทำแล้ว)':''));
+  if(r.trail)a.push('ลง '+r.trail+'% จากสูงสุดให้ทบทวน');
+  return a.join(' · ')||'ปิดอยู่';
+}
+function rulesModal(){
+  var st=S.h.filter(function(h){return h.type!=='fund'&&num(h.units)>0;});
+  var rows=st.map(function(h){var r=S.rules[h.symbol],s=stat(h);return '<div class="item" onclick="ruleEdit(\''+h.id+'\')"><div><b>'+esc(h.symbol)+'</b> <span class="'+cls(s.pct)+'" style="font-size:14px">'+sign(s.pct,0)+'%</span><div class="muted">'+(r?ruleTxt(r):'ยังไม่ตั้งแผน')+'</div></div><div>›</div></div>';}).join('');
+  modal('<h3>🎯 แผนขายทำกำไร</h3><p class="muted">ตั้งกฎล่วงหน้าตอนใจเย็น แล้วให้แอปเตือนเมื่อถึงเกณฑ์ ช่วยไม่ให้ตัดสินใจตามอารมณ์ (สัญญาณขึ้นในหน้าพอร์ตและหมอพอร์ต)</p>'+(rows||'<div class="empty">ยังไม่มีหุ้นที่ถืออยู่</div>')+
+   '<div class="row" style="margin-top:12px"><button class="btn ghost" onclick="ruleAll()">ใช้ค่าแนะนำกับทุกตัว</button><button class="btn ghost" onclick="closeM()">ปิด</button></div>'+
+   '<p class="muted">ค่าแนะนำ: เพดานน้ำหนัก '+RULE_DEF.maxw+'% · กำไร +'+RULE_DEF.gain+'% ขาย '+RULE_DEF.gsell+'% · ลงจากจุดสูงสุด '+RULE_DEF.trail+'% ให้ทบทวน — เป็นค่าตั้งต้นทั่วไป ไม่ใช่สูตรสำเร็จ ปรับให้เหมาะกับตัวเอง</p>');
+}
+function ruleAll(){
+  if(!confirm('ตั้งค่าแนะนำให้หุ้นทุกตัว? (ทับแผนเดิม)'))return;
+  S.h.forEach(function(h){if(h.type!=='fund'&&num(h.units)>0)S.rules[h.symbol]={maxw:RULE_DEF.maxw,gain:RULE_DEF.gain,gsell:RULE_DEF.gsell,trail:RULE_DEF.trail,peak:num(h.price),peakDate:today()};});
+  saveRules().then(function(){render();rulesModal();});
+}
+function ruleEdit(id){
+  var h=findH(id),r=S.rules[h.symbol]||{},s=stat(h);
+  modal('<h3>🎯 แผนขาย '+esc(h.symbol)+'</h3><p class="muted">ตอนนี้ <span class="'+cls(s.pct)+'">'+sign(s.pct,0)+'%</span> · เว้นว่าง = ไม่ใช้กฎนั้น</p>'+
+   fld('เพดานน้ำหนักในพอร์ต (%) — เกินแล้วเตือนให้ขายส่วนเกิน','r_maxw',r.maxw||'',true,'เช่น 30')+
+   '<div class="grid" style="margin-top:0"><div>'+fld('ขายทำกำไรเมื่อกำไรถึง (%)','r_gain',r.gain||'',true,'เช่น 50')+'</div><div>'+fld('ขายกี่ % ของที่ถือ','r_gsell',r.gsell||'',true,'เช่น 33')+'</div></div>'+
+   fld('เตือนทบทวนเมื่อราคาลงจากจุดสูงสุด (%)','r_trail',r.trail||'',true,'เช่น 15')+
+   (r.peak?'<p class="muted">จุดสูงสุดที่บันทึกไว้: '+fmt(r.peak)+' ('+esc(r.peakDate||'')+') — นับจากราคาที่อัปเดตในแอป</p>':'')+
+   '<div class="row" style="margin-top:12px"><button class="btn" onclick="ruleSave(\''+id+'\')">บันทึก</button>'+(S.rules[h.symbol]?'<button class="btn red" onclick="ruleDel(\''+id+'\')">ลบแผน</button>':'')+'<button class="btn ghost" onclick="rulesModal()">กลับ</button></div>');
+}
+function ruleSave(id){
+  var h=findH(id),old=S.rules[h.symbol]||{},p=num(h.price),keep=old.peak&&old.peak>=p;
+  S.rules[h.symbol]={maxw:num($('r_maxw').value),gain:num($('r_gain').value),gsell:num($('r_gsell').value)||33,trail:num($('r_trail').value),peak:keep?old.peak:p,peakDate:keep?old.peakDate:today()};
+  saveRules().then(function(){render();rulesModal();});
+}
+function ruleDel(id){delete S.rules[findH(id).symbol];saveRules().then(function(){render();rulesModal();});}
+function sigDone(id,k){
+  var h=findH(id),r=S.rules[h.symbol];if(!r)return;
+  if(k==='gain')r.gainDone=true;
+  if(k==='trail'){r.peak=num(h.price);r.peakDate=today();}
+  if(k==='maxw'){var d=new Date();d.setDate(d.getDate()+30);r.snooze=d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}
+  saveRules().then(render);
+}
+function sigSim(id,n){simTrim(id);$('st_n').value=n;$('st_mode').value='qty';simTrimMode();}
 
 /* ===== WATCHLIST (หุ้นน่าศึกษา) ===== */
 var STARTER=[
@@ -484,7 +660,7 @@ PAGES.watch=function(){
     if(have[x.s])return;
     ex+='<div class="item" style="cursor:default;align-items:flex-start"><div style="flex:1;padding-right:8px"><b>'+x.s+'</b><span class="badge">'+x.k+'</span><div class="muted">'+x.d+'</div></div><button class="btn sm ghost" onclick="addWatch(\''+x.s+'\')">+ ศึกษา</button></div>';
   });
-  return '<div class="card"><h2>🔍 หุ้นน่าศึกษา</h2><p class="muted">ตัวอย่างหุ้นใหญ่จากหลายกลุ่มธุรกิจ ไว้ฝึกวิเคราะห์ตามเช็กลิสต์ <b>ไม่ใช่คำแนะนำให้ซื้อ</b> ตัวเลขจริงต้องเช็กจากเว็บ SET ทุกครั้ง</p>'+
+  return '<div class="card"><h2>🔍 หุ้นน่าศึกษา</h2><p class="muted">ทำการบ้านก่อนซื้อหุ้นตัวใหม่ — <b>1)</b> กด "+ ศึกษา" หรือเพิ่มชื่อหุ้นเอง (ใส่หุ้นที่ถืออยู่อย่าง GULF ก็ได้) <b>2)</b> ให้ AI สรุปธุรกิจ ตัวเลข และความเสี่ยง แล้วถามต่อได้ <b>3)</b> อ่านเหตุผลแล้วติ๊กเช็กลิสต์ สรุปว่าน่าสนใจหรือไม่ · <b>ไม่ใช่คำแนะนำให้ซื้อ</b></p>'+
    '<div class="res yellow" style="margin-bottom:0">หุ้นส่วนใหญ่ในรายการนี้อยู่ใน <b>K-SET50</b> ที่คุณถืออยู่แล้ว ถ้าจะซื้อรายตัวเพิ่ม ควรมีเหตุผลว่าทำไมตัวนี้จะดีกว่าการถือทั้งตะกร้า</div></div>'+
    '<div class="card"><div class="row" style="justify-content:space-between;margin-bottom:6px"><h2 style="margin:0">กำลังศึกษา</h2><button class="btn sm" onclick="addWatch()">+ เพิ่มเอง</button></div>'+
    (mine||'<div class="empty">ยังไม่มี เลือกจากตัวอย่างด้านล่าง หรือเพิ่มเอง</div>')+'</div>'+
@@ -498,22 +674,127 @@ function addWatch(sym){
   S.watch.push({s:x.s,n:x.n,k:x.k,st:'study',c:{},pe:'',dy:'',note:'',added:today()});
   saveWatch().then(function(){render();watchModal(S.watch.length-1);});
 }
+/* ---- AI ติวเตอร์ (Edge Function invest-ai) ---- */
+var AI_BUSY=false;
+function callAI(messages,web){
+  if(!ONLINE)return Promise.reject(new Error('ต้องเชื่อม Supabase ก่อนถึงใช้ AI ได้'));
+  return fetch(SB_URL+'/functions/v1/invest-ai',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+SB_KEY,'apikey':SB_KEY},body:JSON.stringify({messages:messages,web:!!web})})
+   .then(function(r){return r.json();}).then(function(d){if(d.error)throw new Error(d.error+(d.debug?' · '+d.debug:''));return d;});
+}
+function mdLite(s){
+  var out=[];
+  esc(s).split('\n').forEach(function(l){
+    l=l.replace(/\*\*(.+?)\*\*/g,'<b>$1</b>');
+    if(/^\s*#{1,4}\s+/.test(l))out.push('<b>'+l.replace(/^\s*#{1,4}\s+/,'')+'</b>');
+    else if(/^\s*[-*•]\s+/.test(l))out.push('• '+l.replace(/^\s*[-*•]\s+/,''));
+    else out.push(l);
+  });
+  return out.join('<br>');
+}
+function srcHTML(src){
+  if(!src||!src.length)return '';
+  return '<div class="muted" style="margin-top:6px">แหล่งที่มา: '+src.slice(0,6).map(function(s,k){return '<a href="'+esc(s.url)+'" target="_blank" rel="noopener" style="color:var(--accent)">['+(k+1)+'] '+esc(String(s.title).slice(0,40))+'</a>';}).join(' · ')+'</div>';
+}
+function portCtx(){
+  var V=totals().val;if(!V)return 'ยังไม่มีข้อมูลพอร์ต';
+  return S.h.filter(function(h){return holdVal(h)>0;}).map(function(h){return h.symbol+' '+fmt(holdVal(h)/V*100,0)+'% ('+(h.sector||'-')+')';}).join(', ');
+}
+function parseSheet(t){
+  var a=t.indexOf('{'),b=t.lastIndexOf('}');
+  if(a<0||b<a)return null;
+  try{return JSON.parse(t.slice(a,b+1));}catch(e){return null;}
+}
+function keepW(i){
+  var w=S.watch[i];if(!$('w_pe'))return;
+  w.pe=$('w_pe').value.trim();w.dy=$('w_dy').value.trim();w.note=$('w_note').value.trim();w.st=$('w_st').value;
+}
+function genSheet(i){
+  if(AI_BUSY)return;
+  var w=S.watch[i];keepW(i);AI_BUSY=true;
+  var b=$('ai_btn');if(b){b.disabled=true;b.textContent='🤖 กำลังค้นข้อมูลและวิเคราะห์... (~20–40 วินาที)';}
+  var prompt='วิเคราะห์หุ้น '+w.s+(w.n?' ('+w.n+')':'')+' ในตลาดหลักทรัพย์แห่งประเทศไทย ณ วันที่ '+today()+'\n'+
+   'พอร์ตของผู้ใช้ตอนนี้ (สัดส่วนและกลุ่ม): '+portCtx()+'\n\n'+
+   'ตอบเป็น JSON อย่างเดียว ไม่มีข้อความอื่น ตามรูปแบบนี้:\n'+
+   '{"name":"ชื่อบริษัท","business":"ธุรกิจทำเงินจากอะไร 2-4 ประโยค เข้าใจง่าย",'+
+   '"numbers":[{"label":"ชื่อตัวเลข","value":"ค่า","period":"งวด/ปี","meaning":"แปลว่าอะไร 1 ประโยค"}],'+
+   '"profit_trend":"แนวโน้มกำไรสุทธิย้อนหลังสูงสุด 5 ปี พร้อมตัวเลขรายปีเท่าที่หาได้",'+
+   '"checklist":[{"ok":true,"note":"เหตุผลสั้น ๆ"}],'+
+   '"risks":["ความเสี่ยงหลัก"],"portfolio_fit":"ถ้าผู้ใช้ซื้อหุ้นนี้ จะกระทบการกระจายความเสี่ยงของพอร์ตอย่างไร","learn":"บทเรียน 1 ข้อที่ผู้ใช้ได้จากหุ้นตัวนี้"}\n\n'+
+   'numbers ให้มี: ราคาล่าสุด, P/E, P/BV, อัตราปันผล, ROE, D/E, กำไรสุทธิล่าสุด\n'+
+   'checklist ต้องมี 7 ข้อตามลำดับนี้ (ok เป็น true, false หรือ null ถ้าข้อมูลไม่พอ):\n'+
+   STUDY.map(function(q,k){return (k+1)+'. '+q;}).join('\n');
+  callAI([{role:'user',content:prompt}],true).then(function(d){
+    var sh=parseSheet(d.result);
+    w.ai={sheet:sh,raw:sh?'':d.result,src:d.sources||[],date:today()};
+    if(sh){
+      if(!w.n&&sh.name)w.n=sh.name;
+      (sh.numbers||[]).forEach(function(nm){var l=String(nm.label||''),v=parseFloat(String(nm.value||'').replace(/,/g,''));if(isNaN(v))return;if(!w.pe&&/^P\/E/i.test(l))w.pe=String(v);if(!w.dy&&/ปันผล/.test(l))w.dy=String(v);});
+    }
+    w.chat=[];
+    return saveWatch();
+  }).then(function(){AI_BUSY=false;render();watchModal(i);})
+  .catch(function(e){AI_BUSY=false;fail(e);if(b){b.disabled=false;b.textContent='🤖 ลองอีกครั้ง';}});
+}
+function sheetHTML(w){
+  var a=w.ai;if(!a)return '';
+  var s=a.sheet,h='<div class="q">';
+  if(!s)return h+mdLite(a.raw||'')+srcHTML(a.src)+'</div>';
+  h+='<b>ธุรกิจ</b><p style="margin:4px 0 8px">'+esc(s.business||'-')+'</p>';
+  if(s.numbers&&s.numbers.length){
+    h+='<b>ตัวเลขสำคัญ</b>';
+    s.numbers.forEach(function(nm){h+='<div class="kv"><span>'+esc(nm.label)+(nm.period?' <small>('+esc(nm.period)+')</small>':'')+'<br><small>'+esc(nm.meaning||'')+'</small></span><b>'+esc(nm.value)+'</b></div>';});
+  }
+  if(s.profit_trend)h+='<b style="display:block;margin-top:8px">แนวโน้มกำไร</b><p style="margin:4px 0 8px">'+esc(s.profit_trend)+'</p>';
+  if(s.risks&&s.risks.length)h+='<b>ความเสี่ยง</b><ul style="margin:4px 0 8px;padding-left:20px">'+s.risks.map(function(r){return '<li>'+esc(r)+'</li>';}).join('')+'</ul>';
+  if(s.portfolio_fit)h+='<div class="res yellow" style="margin:6px 0"><b>กับพอร์ตคุณ:</b> '+esc(s.portfolio_fit)+'</div>';
+  if(s.learn)h+='<div class="res blue" style="margin:6px 0"><b>บทเรียน:</b> '+esc(s.learn)+'</div>';
+  return h+srcHTML(a.src)+'<div class="muted" style="margin-top:6px">สร้างเมื่อ '+esc(a.date)+' · AI อาจผิดได้ ตัวเลขสำคัญควรเปิดแหล่งที่มาเช็ก</div></div>';
+}
+function chatHTML(w,i){
+  var h='';
+  (w.chat||[]).forEach(function(c){h+='<div class="q"><b>ถาม:</b> '+esc(c.q)+'<div style="margin-top:6px">'+mdLite(c.a)+'</div>'+srcHTML(c.src)+'</div>';});
+  return h+'<div class="row" style="flex-wrap:nowrap"><input id="ai_q" placeholder="ถามต่อ เช่น ทำไมหนี้สูง / เทียบกับคู่แข่ง"><button class="btn" id="ai_ask" onclick="askAI('+i+')">ถาม</button></div>';
+}
+function askAI(i){
+  var w=S.watch[i],q=$('ai_q').value.trim();
+  if(!q||AI_BUSY)return;
+  keepW(i);AI_BUSY=true;$('ai_ask').disabled=true;$('ai_ask').textContent='...';
+  var ctx='เรากำลังศึกษาหุ้น '+w.s+(w.n?' ('+w.n+')':'')+' วันนี้ '+today()+' · พอร์ตผู้ใช้: '+portCtx()+
+   (w.ai&&w.ai.sheet?'\nสรุปที่วิเคราะห์ไว้แล้ว: '+JSON.stringify(w.ai.sheet).slice(0,4000):'');
+  var msgs=[{role:'user',content:ctx},{role:'assistant',content:'รับทราบ ถามมาได้เลย'}];
+  (w.chat||[]).slice(-4).forEach(function(c){msgs.push({role:'user',content:c.q});msgs.push({role:'assistant',content:c.a});});
+  msgs.push({role:'user',content:q+'\n(ตอบสั้น กระชับ ไม่เกิน 8 บรรทัด)'});
+  callAI(msgs,true).then(function(d){
+    w.chat=(w.chat||[]).concat([{q:q,a:d.result,src:d.sources||[]}]).slice(-10);
+    return saveWatch();
+  }).then(function(){AI_BUSY=false;watchModal(i);var e=$('ai_q');if(e)e.scrollIntoView({block:'center'});})
+  .catch(function(e){AI_BUSY=false;fail(e);var b=$('ai_ask');if(b){b.disabled=false;b.textContent='ถาม';}});
+}
 function watchModal(i){
   var w=S.watch[i],x=starter(w.s),u='https://www.set.or.th/th/market/product/stock/quote/'+encodeURIComponent(w.s);
-  var ck=STUDY.map(function(q,j){return '<div class="q chk" onclick="togW('+i+','+j+',this)">'+(w.c&&w.c[j]?'✅':'⬜')+' '+q+'</div>';}).join('');
+  var cl=w.ai&&w.ai.sheet&&w.ai.sheet.checklist||[];
+  var ck=STUDY.map(function(q,j){
+    var a=cl[j],note=a?'<div class="muted" style="margin:4px 0 0 26px">🤖 '+(a.ok===true?'<span class="up">ผ่าน</span>':a.ok===false?'<span class="down">ไม่ผ่าน</span>':'<span class="warn">ข้อมูลไม่พอ</span>')+' — '+esc(a.note||'')+'</div>':'';
+    return '<div class="q chk"><div onclick="togW('+i+','+j+',this)">'+(w.c&&w.c[j]?'✅':'⬜')+' '+q+'</div>'+note+'</div>';
+  }).join('');
   modal('<h3>'+esc(w.s)+(w.n?' · '+esc(w.n):'')+'</h3>'+
    (x?'<p>'+x.d+'</p><div class="res yellow">⚠️ '+x.w+'</div>':'')+
    (findSym(w.s)?'<div class="res yellow">คุณถือตัวนี้อยู่แล้วในพอร์ต</div>':'')+
-   '<div class="row"><a class="btn sm ghost" href="'+u+'/price" target="_blank" rel="noopener">ราคา/กราฟ (SET)</a><a class="btn sm ghost" href="'+u+'/factsheet" target="_blank" rel="noopener">ข้อมูลสรุป (Factsheet)</a></div>'+
-   '<label>เช็กลิสต์ก่อนตัดสินใจ (แตะเพื่อติ๊ก)</label>'+ck+
+   '<label>🤖 ชีตสรุปจาก AI</label>'+(w.ai?sheetHTML(w):'<p class="muted">กดปุ่มด้านล่าง AI จะค้นข้อมูลล่าสุดจากเว็บ แล้วสรุปธุรกิจ ตัวเลขสำคัญ ความเสี่ยง และไล่เช็กลิสต์ให้</p>')+
+   '<button class="btn'+(w.ai?' ghost':'')+'" id="ai_btn" style="width:100%" onclick="genSheet('+i+')">🤖 '+(w.ai?'อัปเดตชีตสรุป':'ให้ AI สรุปหุ้นนี้')+'</button>'+
+   (w.ai?'<label>💬 ถาม AI ต่อ</label>'+chatHTML(w,i):'')+
+   '<div class="row" style="margin-top:10px"><a class="btn sm ghost" href="'+u+'/price" target="_blank" rel="noopener">ราคา/กราฟ (SET)</a><a class="btn sm ghost" href="'+u+'/factsheet" target="_blank" rel="noopener">Factsheet (SET)</a></div>'+
+   '<label>เช็กลิสต์ — อ่านเหตุผลของ AI แล้วติ๊กเองเมื่อคุณเห็นด้วย</label>'+ck+
    '<div class="grid" style="margin-top:0"><div>'+fld('P/E','w_pe',w.pe,true)+'</div><div>'+fld('อัตราปันผล (%)','w_dy',w.dy,true)+'</div></div>'+
    '<label>บันทึกสิ่งที่ศึกษา</label><textarea id="w_note">'+esc(w.note||'')+'</textarea>'+
    '<label>สรุป</label><select id="w_st"><option value="study">กำลังศึกษา</option><option value="like">น่าสนใจ — ใส่ในแผนได้</option><option value="skip">ไม่เอา</option></select>'+
    '<div class="row" style="margin-top:12px"><button class="btn" onclick="saveW('+i+')">บันทึก</button><button class="btn red" onclick="delW('+i+')">ลบ</button><button class="btn ghost" onclick="closeM()">ปิด</button></div>'+
-   '<p class="muted">P/E และอัตราปันผล ดูได้จากหน้า Factsheet ของ SET แล้วกรอกเอง</p>');
+   '');
   $('w_st').value=w.st||'study';
+  var qi=$('ai_q');if(qi)qi.onkeydown=function(e){if(e.keyCode===13)askAI(i);};
 }
 function togW(i,j,el){var w=S.watch[i];w.c=w.c||{};w.c[j]=!w.c[j];el.innerHTML=(w.c[j]?'✅':'⬜')+' '+STUDY[j];saveWatch();}
+/* ---- end AI ---- */
 function saveW(i){
   var w=S.watch[i],st=$('w_st').value;
   if(st==='like'&&wCount(w)<STUDY.length-1&&!confirm('ยังเช็กไม่ครบ ('+wCount(w)+'/'+STUDY.length+') แน่ใจว่าจะสรุปว่าน่าสนใจ?'))return;
@@ -594,11 +875,16 @@ PAGES.tx=function(){
   return '<div class="card"><div class="row" style="justify-content:space-between"><h2 style="margin:0">บันทึกซื้อ/ขาย/ปันผล</h2><button class="btn sm" onclick="txForm()">+ บันทึก</button></div>'+
    '<p class="muted">ทุกครั้งต้องเขียนเหตุผล ย้อนกลับมาอ่านจะเห็นว่าเราตัดสินใจพลาดตรงไหน</p>'+(list||'<div class="empty">ยังไม่มีรายการ</div>')+'</div>';
 };
-function txForm(sym,amt){
-  if(!S.h.length){toast('เพิ่มรายการในหน้าพอร์ตก่อน');return;}
-  var opts=S.h.map(function(h){return '<option'+(h.symbol===sym?' selected':'')+'>'+esc(h.symbol)+'</option>';}).join('');
-  modal('<h3>บันทึกรายการ</h3>'+fld('วันที่','x_date',today())+
-   '<label>หุ้น/กองทุน</label><select id="x_sym">'+opts+'</select>'+
+var TX_NEXT=null;   /* รายการซื้อที่จะเปิดต่อหลังบันทึกการขาย (จากเครื่องมือลดน้ำหนัก) */
+function txForm(sym,amt,opt){
+  opt=opt||{};
+  TX_NEXT=opt.next||null;
+  var opts=S.h.map(function(h){return '<option value="'+esc(h.symbol)+'">';}).join('');
+  modal('<h3>'+(opt.title||'บันทึกรายการ')+'</h3>'+(opt.note?'<div class="res blue" style="margin-top:0">'+opt.note+'</div>':'')+fld('วันที่','x_date',today())+
+   '<label>หุ้น/กองทุน (เลือก หรือพิมพ์ชื่อตัวใหม่)</label><input id="x_sym" list="x_syms" autocapitalize="characters" value="'+esc(sym||'')+'" oninput="txNew()"><datalist id="x_syms">'+opts+'</datalist>'+
+   '<div id="x_new" style="display:none"><div class="res blue" style="margin:8px 0 0">ตัวใหม่ — แอปจะเพิ่มเข้าพอร์ตให้อัตโนมัติเมื่อบันทึกการซื้อ</div>'+
+    '<label>ประเภท</label><select id="x_ntype"><option value="stock">หุ้น</option><option value="fund">กองทุน</option></select>'+
+    fld('กลุ่ม/หมวด','x_nsec','',false,'เช่น ค้าปลีก, หุ้นสหรัฐ (ดัชนี)')+'</div>'+
    '<label>ประเภท</label><select id="x_kind" onchange="txHint()"><option value="buy">ซื้อ</option><option value="sell">ขาย</option><option value="dividend">ปันผล (ได้รับเงิน)</option></select>'+
    '<div id="x_tr">'+fld('ราคา / NAV ต่อหน่วย','x_price','',true)+fld('จำนวนหุ้น/หน่วย','x_units','',true,'ว่างไว้ได้ ถ้ากรอกจำนวนเงิน')+'</div>'+
    fld('จำนวนเงิน (฿)','x_amt',amt?Math.round(amt*100)/100:'',true,'ซื้อกองทุนใส่ยอดเงินได้เลย')+
@@ -606,10 +892,41 @@ function txForm(sym,amt){
    '<label>เหตุผล (ต้องกรอก)</label><textarea id="x_reason" placeholder="เช่น DCA ตามแผนเดือนนี้ / ผลตรวจหมอพอร์ตบอกให้ลดสัดส่วน"></textarea>'+
    '<div class="row" style="margin-top:12px"><button class="btn" onclick="saveTx()">บันทึก</button><button class="btn ghost" onclick="closeM()">ยกเลิก</button></div>'+
    '<p class="muted">ซื้อ/ขายจะปรับจำนวนและต้นทุนเฉลี่ยในหน้าพอร์ตให้อัตโนมัติ</p>');
+  if(opt.kind){$('x_kind').value=opt.kind;txHint();}
+  if(opt.price)$('x_price').value=opt.price;
+  if(opt.units)$('x_units').value=opt.units;
+  if(opt.fee)$('x_fee').value=Math.round(opt.fee*100)/100;
+  if(opt.reason)$('x_reason').value=opt.reason;
+  if(opt.ntype){txNew();$('x_ntype').value=opt.ntype;}
+  txNew();
+}
+/* เปิดฟอร์มขายจริงจากผลในเครื่องมือลดน้ำหนัก แล้วต่อด้วยฟอร์มซื้อปลายทาง */
+var TRIM=null;
+function trimRecord(){
+  if(!TRIM)return;
+  var t=TRIM,h=findH(t.id),next=null;
+  if(t.to.indexOf('h:')===0){
+    var f=findH(t.to.slice(2));
+    next={sym:f.symbol,amt:t.net,o:{kind:'buy',price:num(f.price)||'',reason:'ย้ายเงินจากการขาย '+h.symbol+' เพื่อลดน้ำหนักพอร์ต',title:'ขั้นที่ 2: บันทึกการซื้อ '+f.symbol,note:'บันทึกการขายแล้ว ✅ ตอนนี้บันทึกการซื้อด้วยเงินที่ได้ — แก้ NAV และยอดเงินให้ตรงกับที่ซื้อจริง (ถ้ายังไม่ได้ซื้อ กดยกเลิกได้)'}};
+  }else if(t.to.indexOf('w:')===0&&t.bu>0){
+    var ws=S.watch[+t.to.slice(2)];
+    next={sym:ws.s,amt:null,o:{kind:'buy',price:t.wp,units:t.bu,fee:feeOf(t.bu*t.wp),ntype:'stock',reason:'ย้ายเงินจากการขาย '+h.symbol+' ไปซื้อ '+ws.s+' หลังศึกษาแล้ว',title:'ขั้นที่ 2: บันทึกการซื้อ '+ws.s,note:'บันทึกการขายแล้ว ✅ ตอนนี้บันทึกการซื้อ '+esc(ws.s)+' — แก้ราคา จำนวน และค่าคอมให้ตรงกับที่ซื้อจริง (ถ้ายังไม่ได้ซื้อ กดยกเลิกได้)'}};
+  }
+  txForm(h.symbol,null,{kind:'sell',price:t.p,units:t.su,fee:t.fee,next:next,
+   title:(next?'ขั้นที่ 1: ':'')+'บันทึกการขาย '+h.symbol,
+   note:'กรอกไว้ให้จากที่ลองคิด — <b>แก้ราคาขายและค่าคอมให้ตรงกับที่ขายจริง</b> (ดูจาก Deal Sum ในแอปโบรก)',
+   reason:'ลดน้ำหนัก '+h.symbol+' ให้เหลือประมาณ '+fmt(t.nw,0)+'% ของพอร์ต'+(t.to==='res'?' เก็บเป็นก้อนลงทุนสำรอง':'')});
 }
 function txHint(){var d=$('x_kind').value==='dividend';$('x_tr').style.display=d?'none':'';$('x_fe').style.display=d?'none':'';}
+function txNew(){
+  var s=$('x_sym').value.trim().toUpperCase(),isNew=!!s&&!findSym(s);
+  $('x_new').style.display=isNew?'':'none';
+  if(isNew&&!$('x_nsec').value){for(var i=0;i<S.watch.length;i++)if(S.watch[i].s===s&&S.watch[i].k){$('x_nsec').value=S.watch[i].k;break;}}
+}
 function saveTx(){
-  var sym=$('x_sym').value,kind=$('x_kind').value,h=findSym(sym),reason=$('x_reason').value.trim();
+  var sym=$('x_sym').value.trim().toUpperCase(),kind=$('x_kind').value,h=findSym(sym),reason=$('x_reason').value.trim();
+  if(!sym){toast('ใส่ชื่อหุ้น/กองทุน');return;}
+  if(!h&&kind!=='buy'){toast(sym+' ยังไม่มีในพอร์ต — บันทึกได้เฉพาะการซื้อ');return;}
   if(!reason){toast('เขียนเหตุผลสั้น ๆ ก่อนนะ');return;}
   var price=num($('x_price').value),units=num($('x_units').value),amount=num($('x_amt').value),fee=num($('x_fee').value);
   if(kind==='dividend'){price=0;units=0;fee=0;if(!amount){toast('ใส่จำนวนเงินปันผล');return;}}
@@ -620,14 +937,24 @@ function saveTx(){
     if(!units){toast('ใส่จำนวนหน่วยหรือจำนวนเงิน');return;}
   }
   var row={date:$('x_date').value||today(),symbol:sym,kind:kind,units:units,price:price,amount:amount,fee:fee,realized:0,reason:reason};
+  if(!h){
+    /* หุ้น/กองทุนตัวใหม่: สร้างรายการในพอร์ตพร้อมจำนวนและต้นทุนจากการซื้อครั้งนี้ */
+    var nh={symbol:sym,name:'',type:$('x_ntype').value,sector:$('x_nsec').value.trim(),units:units,avg_cost:(amount+fee)/units,price:price,price_updated:new Date().toISOString(),target_pct:0};
+    for(var i=0;i<S.watch.length;i++)if(S.watch[i].s===sym){nh.name=S.watch[i].n||'';break;}
+    db.insert('inv_transactions',row).then(function(){return db.insert('inv_holdings',nh);})
+     .then(function(){closeM();toast('บันทึกแล้ว และเพิ่ม '+sym+' เข้าพอร์ต');return load();}).catch(fail);
+    return;
+  }
   var upd=null,hu=num(h.units),ha=num(h.avg_cost);
   if(kind==='buy'){var nu=hu+units;upd={units:nu,avg_cost:nu?(hu*ha+amount+fee)/nu:0};if(!num(h.price)){upd.price=price;}}
   if(kind==='sell'){
     if(units>hu+1e-9){toast('ขายเกินจำนวนที่ถืออยู่');return;}
     row.realized=(price-ha)*units-fee;upd={units:hu-units};
   }
+  var nx=kind==='sell'?TX_NEXT:null;TX_NEXT=null;
   db.insert('inv_transactions',row).then(function(){return upd?db.update('inv_holdings',h.id,upd):null;})
-   .then(function(){closeM();toast('บันทึกแล้ว');return load();}).catch(fail);
+   .then(function(){closeM();toast('บันทึกแล้ว');return load();})
+   .then(function(){if(nx)txForm(nx.sym,nx.amt,nx.o);}).catch(fail);
 }
 function delTx(id){
   if(!confirm('ลบรายการนี้? (จะไม่ย้อนแก้จำนวน/ต้นทุนในหน้าพอร์ต ต้องแก้เองถ้าจำเป็น)'))return;
