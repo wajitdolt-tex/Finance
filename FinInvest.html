@@ -164,6 +164,8 @@ function load(){
       if(s.key==='watch')S.watch=s.value||[];
       if(s.key==='fee'&&s.value){FEE=num(s.value.pct);FEE_MIN=num(s.value.min);if(s.value.funds)extend(FFEE,s.value.funds);}
       if(s.key==='rules')S.rules=s.value||{};
+      if(s.key==='deposits')S.dep=s.value||[];
+      if(s.key==='cash')S.cash=s.value||{};
     });
     S.h.sort(function(a,b){return a.symbol<b.symbol?-1:1;});
     S.tx.sort(function(a,b){return a.date<b.date?1:(a.date>b.date?-1:(String(a.created_at||'')<String(b.created_at||'')?1:-1));});
@@ -250,10 +252,84 @@ PAGES.port=function(){
    '<div><span>ปันผลที่ได้รับแล้ว</span><b class="up">'+fmt(t.div)+'</b></div><div><span>กำไร/ขาดทุนที่ขายแล้ว</span><b class="'+cls(t.real)+'">'+sign(t.real)+'</b></div></div>'+
    '<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--line)"><span class="muted">ผลรวมจริง (ราคา + ปันผล + ที่ขายแล้ว)</span><div class="big '+cls(t.total)+'" style="font-size:22px">'+sign(t.total)+' ฿ ('+sign(t.tpct)+'%)</div></div>'+
    (uLoss<0||uGain>0?'<div class="res yellow" style="margin:10px 0 0">💡 '+(uLoss<0?'ขาดทุนที่ยังไม่ขาย <b class="down">'+fmt(uLoss)+' ฿</b> คือมูลค่าที่หายไปแล้วจริง ไม่ขายก็ไม่ได้คืน — คำถามที่ถูกคือเงินที่เหลือควรอยู่ตรงไหน':'')+(uLoss<0&&uGain>0?'<br>':'')+(uGain>0?'กำไรที่ยังไม่ขาย <b class="up">+'+fmt(uGain)+' ฿</b> ยังไม่ใช่เงินในมือ ลดลงได้ถ้าราคาลง — ตั้งแผนขายไว้ที่หมอพอร์ต':'')+'</div>':'')+'</div>'+
+   depCardHTML(pf)+
    signalsHTML()+
    '<div class="card"><h2>สัดส่วนตามกลุ่ม'+(pf==='all'?'':(pf==='stock'?' (เฉพาะหุ้น)':' (เฉพาะกองทุน)'))+'</h2><div class="bar">'+bar+'</div><div class="legend">'+leg+'</div></div>'+
    '<div class="card"><div class="row" style="justify-content:space-between;margin-bottom:6px"><h2 style="margin:0">รายการที่ถือ</h2><div class="row"><button class="btn sm ghost" onclick="priceModal()">อัปเดตราคา</button><button class="btn sm" onclick="editH()">+ เพิ่ม</button></div></div>'+(list||'<div class="empty">ยังไม่มีรายการในกลุ่มนี้</div>')+'</div>';
 };
+/* ===== เงินที่เติมเข้าพอร์ต (ฝาก/ถอน) → กำไรจริง + ผลตอบแทนต่อปี ===== */
+S.dep=[];S.cash={};
+var DEP_SEED=[['2020-12-25',300],['2021-01-04',500],['2021-01-05',500],['2021-01-08',200],['2021-01-20',100],['2021-02-01',500],['2021-02-23',200],
+ ['2021-03-02',500],['2021-04-01',500],['2021-05-05',500],['2021-06-01',500],['2021-06-30',500],['2021-08-03',500],['2021-08-31',500],['2021-10-01',500],['2021-12-01',700],
+ ['2022-01-04',1000],['2022-02-01',500],['2022-03-01',500],['2022-04-02',500],['2022-05-03',500],['2022-05-31',500],['2022-07-01',500],['2022-08-01',500],['2022-09-01',500],['2025-05-30',500]];
+function saveDep(){return db.setting('deposits',S.dep).catch(fail);}
+function depOf(pf){return S.dep.filter(function(d){return pf==='all'||d.acct===pf;});}
+function cashOf(pf){var c=S.cash||{};return pf==='stock'?num(c.stock):(pf==='fund'?0:num(c.stock));}
+function thaiDate(d){if(!d)return 'ไม่ระบุวันที่';var p=String(d).split('-');return p.length<3?d:(+p[2])+'/'+(+p[1])+'/'+String(+p[0]+543).slice(2);}
+function yearsBetween(a,b){return (new Date(b)-new Date(a))/(365.25*864e5);}
+/* ผลตอบแทนต่อปีแบบถ่วงเวลาเงินเข้า-ออก (XIRR) — ต้องมีวันที่ครบทุกรายการ */
+function xirr(flows,endVal,endDate){
+  if(!flows.length)return null;
+  for(var i=0;i<flows.length;i++)if(!flows[i].date)return null;
+  function f(r){var s=endVal;flows.forEach(function(x){s-=num(x.amt)*Math.pow(1+r,yearsBetween(x.date,endDate));});return s;}
+  var lo=-0.99,hi=5,flo=f(lo),fhi=f(hi);
+  if(flo*fhi>0)return null;
+  for(var k=0;k<200;k++){var m=(lo+hi)/2,fm=f(m);if(Math.abs(fm)<1e-6)return m;if(flo*fm<0){hi=m;fhi=fm;}else{lo=m;flo=fm;}}
+  return (lo+hi)/2;
+}
+function depStats(pf){
+  var ds=depOf(pf),inv=0,undated=0,first=null;
+  ds.forEach(function(d){inv+=num(d.amt);if(!d.date)undated++;else if(!first||d.date<first)first=d.date;});
+  var val=pfTotals(pfList(pf)).val+cashOf(pf),gain=val-inv;
+  return {n:ds.length,inv:inv,val:val,cash:cashOf(pf),gain:gain,pct:inv?gain/inv*100:0,irr:undated?null:xirr(ds,val,today()),undated:undated,first:first};
+}
+function depCardHTML(pf){
+  if(!S.dep.length)return '<div class="card"><h2>💰 กำไรจริงเทียบกับเงินที่เติมเข้าพอร์ต</h2><p class="muted">วัดผลแบบตรงที่สุด: เงินที่ใส่ไปทั้งหมด เทียบกับมูลค่าตอนนี้ (รวมเงินสดค้างในบัญชี)</p><div class="row"><button class="btn" onclick="depSeed()">ใส่ประวัติเติมเงิน (หุ้น 26 รายการ + กองทุน)</button><button class="btn ghost" onclick="depModal()">จัดการเอง</button></div></div>';
+  var s=depStats(pf);if(!s.n)return '';
+  var lbl=pf==='stock'?'บัญชีหุ้น':(pf==='fund'?'กองทุน':'ทั้งหมด');
+  return '<div class="card"><div class="row" style="justify-content:space-between"><h2 style="margin:0">💰 กำไรจริง ('+lbl+')</h2><button class="btn sm ghost" onclick="depModal()">รายการเติมเงิน</button></div>'+
+   '<div class="grid"><div><span>เงินที่เติมเข้าทั้งหมด</span>'+fmt(s.inv)+'</div><div><span>มูลค่าตอนนี้'+(s.cash?' (รวมเงินสด '+fmt(s.cash)+')':'')+'</span>'+fmt(s.val)+'</div>'+
+   '<div><span>กำไร/ขาดทุนจริง</span><b class="'+cls(s.gain)+'">'+sign(s.gain)+' ('+sign(s.pct,1)+'%)</b></div>'+
+   '<div><span>ผลตอบแทนเฉลี่ยต่อปี</span>'+(s.irr==null?'<span class="warn" style="display:inline;font-size:14px">'+(s.undated?'ใส่วันที่ให้ครบก่อน ('+s.undated+' รายการ)':'คำนวณไม่ได้')+'</span>':'<b class="'+cls(s.irr)+'">'+sign(s.irr*100,1)+'% / ปี</b>')+'</div></div>'+
+   (s.first?'<p class="muted" style="margin:8px 0 0">เริ่มเติมเงิน '+thaiDate(s.first)+' · ผลตอบแทนต่อปีคิดถ่วงตามวันที่เงินเข้า (XIRR) — เทียบกับเงินฝากประจำได้ตรง ๆ</p>':'')+'</div>';
+}
+function depSeed(){
+  DEP_SEED.forEach(function(x){S.dep.push({id:uid(),date:x[0],acct:'stock',amt:x[1],note:''});});
+  S.dep.push({id:uid(),date:'',acct:'fund',amt:4506.78,note:'ต้นทุนรวมจาก K PLUS (รวมที่สับเปลี่ยนจาก K-INDIA) — ใส่วันที่ซื้อให้ครบเพื่อคำนวณต่อปี'});
+  saveDep().then(function(){toast('ใส่ประวัติแล้ว');render();});
+}
+function depModal(){
+  var ds=S.dep.slice().sort(function(a,b){return (b.date||'9')<(a.date||'9')?-1:1;}),rows='',tot={stock:0,fund:0};
+  ds.forEach(function(d){tot[d.acct]=(tot[d.acct]||0)+num(d.amt);
+    rows+='<div class="item" style="cursor:default"><div><b>'+(num(d.amt)<0?'ถอน':'เติม')+' '+(d.acct==='fund'?'🏦 กองทุน':'📈 หุ้น')+'</b><div class="muted">'+(d.date?thaiDate(d.date):'<span class="warn">ไม่ระบุวันที่</span>')+(d.note?' · '+esc(d.note):'')+'</div></div><div class="row"><b class="'+cls(num(d.amt))+'">'+fmt(d.amt)+'</b><button class="btn sm ghost" onclick="depEdit(\''+d.id+'\')">แก้</button></div></div>';});
+  modal('<h3>💰 รายการเติมเงินเข้าพอร์ต</h3><p class="muted">ใส่เฉพาะเงินที่โอนเข้า/ถอนออกจากบัญชี ไม่ต้องใส่การซื้อขายหุ้น (บันทึกแยกที่หน้าบันทึก)</p>'+
+   '<div class="grid" style="margin-top:0"><div><span>📈 หุ้น รวม</span><b>'+fmt(tot.stock)+'</b></div><div><span>🏦 กองทุน รวม</span><b>'+fmt(tot.fund)+'</b></div></div>'+
+   fld('เงินสดค้างในบัญชีหุ้น (ดู Line Available ในแอปโบรก)','dp_cash',num(S.cash&&S.cash.stock)||'',true)+
+   '<div class="row" style="margin:10px 0"><button class="btn sm" onclick="depEdit()">+ เติม/ถอนเงิน</button><button class="btn sm ghost" onclick="depCash()">บันทึกเงินสด</button></div>'+
+   (rows||'<div class="empty">ยังไม่มีรายการ</div>')+'<div class="row" style="margin-top:12px"><button class="btn ghost" onclick="closeM();render()">ปิด</button></div>');
+}
+function depCash(){S.cash=S.cash||{};S.cash.stock=num($('dp_cash').value);db.setting('cash',S.cash).then(function(){toast('บันทึกเงินสดแล้ว');render();depModal();}).catch(fail);}
+function depEdit(id){
+  var d=null;for(var i=0;i<S.dep.length;i++)if(S.dep[i].id===id)d=S.dep[i];
+  d=d||{date:today(),acct:'stock',amt:'',note:''};
+  var isW=num(d.amt)<0;
+  modal('<h3>'+(id?'แก้รายการ':'เติม/ถอนเงิน')+'</h3>'+
+   '<label>บัญชี</label><select id="dp_acct"><option value="stock">📈 บัญชีหุ้น</option><option value="fund">🏦 กองทุน</option></select>'+
+   '<label>ประเภท</label><select id="dp_kind"><option value="in">เติมเงินเข้า</option><option value="out">ถอนเงินออก</option></select>'+
+   '<label>วันที่</label><input id="dp_date" type="date" value="'+esc(d.date||'')+'">'+
+   fld('จำนวนเงิน (฿)','dp_amt',d.amt===''?'':Math.abs(num(d.amt)),true)+fld('หมายเหตุ','dp_note',d.note||'')+
+   '<div class="row" style="margin-top:12px"><button class="btn" onclick="depSave(\''+(id||'')+'\')">บันทึก</button>'+(id?'<button class="btn red" onclick="depDel(\''+id+'\')">ลบ</button>':'')+'<button class="btn ghost" onclick="depModal()">กลับ</button></div>');
+  $('dp_acct').value=d.acct||'stock';$('dp_kind').value=isW?'out':'in';
+}
+function depSave(id){
+  var a=Math.abs(num($('dp_amt').value));if(!a){toast('ใส่จำนวนเงิน');return;}
+  var row={date:$('dp_date').value,acct:$('dp_acct').value,amt:$('dp_kind').value==='out'?-a:a,note:$('dp_note').value.trim()};
+  var found=false;for(var i=0;i<S.dep.length;i++)if(S.dep[i].id===id){extend(S.dep[i],row);found=true;}
+  if(!found){row.id=uid();S.dep.push(row);}
+  saveDep().then(function(){render();depModal();});
+}
+function depDel(id){if(!confirm('ลบรายการนี้?'))return;S.dep=S.dep.filter(function(d){return d.id!==id;});saveDep().then(function(){render();depModal();});}
+
 /* แยกพอร์ต หุ้น / กองทุน */
 try{S.pf=localStorage.getItem('inv_pf')||'all';}catch(e){S.pf='all';}
 function setPf(v){S.pf=v;try{localStorage.setItem('inv_pf',v);}catch(e){}render();window.scrollTo(0,0);}
